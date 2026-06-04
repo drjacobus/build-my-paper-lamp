@@ -62,8 +62,12 @@ export async function uploadImages(photos: Buffer[]): Promise<string> {
 
   const res = await fetch(`${BASE_URL}/v1/open/photo/image`, {
     method: 'POST',
-    headers: { ...authHeader(), 'Content-Type': contentType },
-    body,
+    headers: {
+      ...authHeader(),
+      'Content-Type': contentType,
+      'Content-Length': String(body.byteLength),
+    },
+    body: new Uint8Array(body),
   })
 
   const text = await res.text()
