@@ -3,6 +3,8 @@
 // Auth: Bearer token in Authorization header
 // Host allowlist must include your Vercel domain in the Kiri developer portal
 
+import https from 'node:https'
+
 const BASE_URL = 'https://api.kiriengine.app/api'
 
 function authHeader() {
@@ -57,24 +59,40 @@ function buildMultipart(photos: Buffer[]): { body: Buffer; contentType: string }
   }
 }
 
+// Upload images using Node.js https module (more reliable than fetch for large binary bodies)
+function httpsPost(url: string, body: Buffer, headers: Record<string, string>): Promise<{ status: number; text: string }> {
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url)
+    const req = https.request({
+      hostname: parsed.hostname,
+      path: parsed.pathname + parsed.search,
+      method: 'POST',
+      headers: { ...headers, 'Content-Length': String(body.byteLength) },
+    }, (res) => {
+      const chunks: Buffer[] = []
+      res.on('data', (c: Buffer) => chunks.push(c))
+      res.on('end', () => resolve({ status: res.statusCode ?? 0, text: Buffer.concat(chunks).toString() }))
+      res.on('error', reject)
+    })
+    req.on('error', reject)
+    req.write(body)
+    req.end()
+  })
+}
+
 // Upload images and return the serialize ID
 export async function uploadImages(photos: Buffer[]): Promise<string> {
   const { body, contentType } = buildMultipart(photos)
   console.log(`[kiri upload] total multipart body: ${body.byteLength} bytes`)
 
-  const res = await fetch(`${BASE_URL}/v1/open/photo/image`, {
-    method: 'POST',
-    headers: {
-      ...authHeader(),
-      'Content-Type': contentType,
-      'Content-Length': String(body.byteLength),
-    },
-    body: new Uint8Array(body),
-  })
+  const { status, text } = await httpsPost(
+    `${BASE_URL}/v1/open/photo/image`,
+    body,
+    { ...authHeader(), 'Content-Type': contentType }
+  )
 
-  const text = await res.text()
-  console.log(`[kiri upload] status=${res.status} body=${text.slice(0, 300)}`)
-  if (!res.ok) throw new Error(`Kiri upload failed: ${res.status} ${text}`)
+  console.log(`[kiri upload] status=${status} body=${text.slice(0, 300)}`)
+  if (status < 200 || status >= 300) throw new Error(`Kiri upload failed: ${status} ${text}`)
 
   let data: Record<string, unknown>
   try { data = JSON.parse(text) } catch { throw new Error(`Kiri upload non-JSON: ${text}`) }
