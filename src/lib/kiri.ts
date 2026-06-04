@@ -33,11 +33,13 @@ export function pickEvenly<T>(arr: T[], n: number): T[] {
 export async function uploadImages(photos: Buffer[]): Promise<string> {
   const form = new FormData()
   for (let i = 0; i < photos.length; i++) {
-    // .slice() forces a copy into a plain ArrayBuffer, avoiding SharedArrayBuffer issues
-    const bytes = new Uint8Array(photos[i]).slice()
-    console.log(`[kiri upload] photo ${i}: ${bytes.byteLength} bytes`)
-    const blob = new Blob([bytes], { type: 'image/jpeg' })
-    form.append('files', blob, `photo_${String(i).padStart(4, '0')}.jpg`)
+    // Explicitly slice the underlying ArrayBuffer using byteOffset+byteLength
+    // so Node.js FormData/fetch gets a clean ArrayBuffer (not a pooled Buffer view)
+    const p = photos[i]
+    const ab = p.buffer.slice(p.byteOffset, p.byteOffset + p.byteLength)
+    console.log(`[kiri upload] photo ${i}: ${ab.byteLength} bytes`)
+    const file = new File([ab], `photo_${String(i).padStart(4, '0')}.jpg`, { type: 'image/jpeg' })
+    form.append('files', file)
   }
 
   const res = await fetch(`${BASE_URL}/v1/open/photo/image`, {
