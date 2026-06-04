@@ -29,23 +29,41 @@ export function pickEvenly<T>(arr: T[], n: number): T[] {
   )
 }
 
+// Build multipart body manually — bypasses Node.js FormData serialization quirks
+function buildMultipart(photos: Buffer[]): { body: Buffer; contentType: string } {
+  const boundary = '----KiriBoundary' + Date.now()
+  const parts: Buffer[] = []
+
+  for (let i = 0; i < photos.length; i++) {
+    const filename = `photo_${String(i).padStart(4, '0')}.jpg`
+    // Ensure clean copy from Buffer pool
+    const data = Buffer.from(photos[i].buffer, photos[i].byteOffset, photos[i].byteLength)
+    console.log(`[kiri upload] photo ${i}: ${data.byteLength} bytes`)
+    parts.push(Buffer.from(
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="files"; filename="${filename}"\r\n` +
+      `Content-Type: image/jpeg\r\n\r\n`
+    ))
+    parts.push(data)
+    parts.push(Buffer.from('\r\n'))
+  }
+  parts.push(Buffer.from(`--${boundary}--\r\n`))
+
+  return {
+    body: Buffer.concat(parts),
+    contentType: `multipart/form-data; boundary=${boundary}`,
+  }
+}
+
 // Upload images and return the serialize ID
 export async function uploadImages(photos: Buffer[]): Promise<string> {
-  const form = new FormData()
-  for (let i = 0; i < photos.length; i++) {
-    // Explicitly slice the underlying ArrayBuffer using byteOffset+byteLength
-    // so Node.js FormData/fetch gets a clean ArrayBuffer (not a pooled Buffer view)
-    const p = photos[i]
-    const ab = p.buffer.slice(p.byteOffset, p.byteOffset + p.byteLength)
-    console.log(`[kiri upload] photo ${i}: ${ab.byteLength} bytes`)
-    const file = new File([ab], `photo_${String(i).padStart(4, '0')}.jpg`, { type: 'image/jpeg' })
-    form.append('files', file)
-  }
+  const { body, contentType } = buildMultipart(photos)
+  console.log(`[kiri upload] total multipart body: ${body.byteLength} bytes`)
 
   const res = await fetch(`${BASE_URL}/v1/open/photo/image`, {
     method: 'POST',
-    headers: authHeader(),
-    body: form,
+    headers: { ...authHeader(), 'Content-Type': contentType },
+    body,
   })
 
   const text = await res.text()
