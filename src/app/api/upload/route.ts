@@ -24,11 +24,14 @@ export async function POST(req: NextRequest) {
     // (Kiri requires min 20; keeping it ≤30 avoids Vercel body-size limits)
     const buffers: Buffer[] = []
     for (const file of files) {
-      buffers.push(Buffer.from(await file.arrayBuffer()))
+      const arr = await file.arrayBuffer()
+      const buf = Buffer.from(arr)
+      console.log(`[upload] file "${file.name}" size=${file.size} buf=${buf.byteLength}`)
+      buffers.push(buf)
     }
 
     const selected = pickEvenly(buffers, Math.min(30, Math.max(20, buffers.length)))
-    console.log(`[upload] ${files.length} photos received → sending ${selected.length} to Kiri`)
+    console.log(`[upload] ${files.length} photos received → sending ${selected.length} to Kiri, total bytes=${selected.reduce((s, b) => s + b.byteLength, 0)}`)
 
     const serializeId = await uploadImages(selected)
     console.log(`[upload] Kiri serialize ID: ${serializeId}`)

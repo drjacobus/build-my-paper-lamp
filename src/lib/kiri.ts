@@ -33,7 +33,10 @@ export function pickEvenly<T>(arr: T[], n: number): T[] {
 export async function uploadImages(photos: Buffer[]): Promise<string> {
   const form = new FormData()
   for (let i = 0; i < photos.length; i++) {
-    const blob = new Blob([new Uint8Array(photos[i])], { type: 'image/jpeg' })
+    // .slice() forces a copy into a plain ArrayBuffer, avoiding SharedArrayBuffer issues
+    const bytes = new Uint8Array(photos[i]).slice()
+    console.log(`[kiri upload] photo ${i}: ${bytes.byteLength} bytes`)
+    const blob = new Blob([bytes], { type: 'image/jpeg' })
     form.append('files', blob, `photo_${String(i).padStart(4, '0')}.jpg`)
   }
 
