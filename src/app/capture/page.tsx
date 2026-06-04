@@ -8,10 +8,37 @@ import { CapturedPhoto } from '@/types'
 
 const MIN_PHOTOS = 15
 
+// Resize + compress a photo blob to stay within Vercel's 4.5MB function limit.
+// 1024px wide at 80% JPEG quality → ~150KB per photo.
+async function compressPhoto(blob: Blob): Promise<Blob> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    const url = URL.createObjectURL(blob)
+    img.onload = () => {
+      const MAX = 1024
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height))
+      const canvas = document.createElement('canvas')
+      canvas.width  = Math.round(img.width  * scale)
+      canvas.height = Math.round(img.height * scale)
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+      canvas.toBlob(
+        (compressed) => resolve(compressed ?? blob),
+        'image/jpeg',
+        0.8
+      )
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(blob) }
+    img.src = url
+  })
+}
+
 export default function CapturePage() {
   const router = useRouter()
   const [photos, setPhotos] = useState<CapturedPhoto[]>([])
   const [uploading, setUploading] = useState(false)
+  const [uploadLabel, setUploadLabel] = useState('Uploading…')
   const [error, setError] = useState<string | null>(null)
 
   const handleDelete = useCallback((id: string) => {
@@ -24,21 +51,30 @@ export default function CapturePage() {
     setError(null)
 
     try {
+      // Compress all photos client-side before uploading
+      setUploadLabel('Compressing photos…')
+      const compressed = await Promise.all(photos.map(p => compressPhoto(p.blob)))
+
+      setUploadLabel('Uploading…')
       const formData = new FormData()
-      photos.forEach((p, i) => formData.append('photos', p.blob, `photo_${i}.jpg`))
+      compressed.forEach((blob, i) => formData.append('photos', blob, `photo_${i}.jpg`))
 
       const res = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) {
-        const body = await res.json()
-        throw new Error(body.error ?? 'Upload failed')
+        let errMsg = 'Upload failed'
+        try {
+          const body = await res.json()
+          errMsg = typeof body.error === 'string' ? body.error : `Upload failed (${res.status})`
+        } catch { errMsg = `Upload failed (${res.status})` }
+        throw new Error(errMsg)
       }
       const data = await res.json()
 
-      if (data.demo) {
-        router.push(`/processing?jobId=${data.jobId}&demo=true`)
-      } else {
-        router.push(`/processing?jobId=${data.jobId}&projectId=${encodeURIComponent(data.projectId)}`)
-      }
+      const url = data.demo
+        ? `/processing?jobId=${data.jobId}&demo=true`
+        : `/processing?jobId=${data.jobId}&projectId=${encodeURIComponent(data.projectId)}`
+
+      window.location.href = url
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setUploading(false)
@@ -88,7 +124,7 @@ export default function CapturePage() {
           {uploading ? (
             <span className="flex items-center justify-center gap-2">
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Uploading…
+              {uploadLabel}
             </span>
           ) : ready ? (
             `Process ${photos.length} Photos →`
