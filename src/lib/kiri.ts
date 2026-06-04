@@ -21,11 +21,13 @@ export function parseStatus(code: number): { status: string; progress: number; s
   return { status: 'processing', progress: 10, stage: 'queued' }
 }
 
-// Pick n evenly-spaced items from an array
+// Pick exactly n items from arr, cycling if arr is shorter than n
 export function pickEvenly<T>(arr: T[], n: number): T[] {
-  if (arr.length <= n) return arr
+  if (arr.length === 0) return []
   return Array.from({ length: n }, (_, i) =>
-    arr[Math.round((i * (arr.length - 1)) / (n - 1))]
+    arr.length <= n
+      ? arr[i % arr.length]
+      : arr[Math.round((i * (arr.length - 1)) / (n - 1))]
   )
 }
 
