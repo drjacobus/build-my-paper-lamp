@@ -7,6 +7,7 @@ import PhotoGallery from '@/components/PhotoGallery'
 import { CapturedPhoto } from '@/types'
 
 const MIN_PHOTOS = 15
+const MAX_PHOTOS = 25
 
 // Resize + compress a photo blob to stay within Vercel's 4.5MB function limit.
 // 1024px wide at 80% JPEG quality → ~150KB per photo.
@@ -43,6 +44,10 @@ export default function CapturePage() {
 
   const handleDelete = useCallback((id: string) => {
     setPhotos((prev) => prev.filter((p) => p.id !== id))
+  }, [])
+
+  const handlePhotos = useCallback((newPhotos: CapturedPhoto[]) => {
+    setPhotos(newPhotos.slice(0, MAX_PHOTOS))
   }, [])
 
   async function handleProcess() {
@@ -95,8 +100,8 @@ export default function CapturePage() {
 
       <div className="mb-5">
         <div className="flex justify-between text-xs text-amber-700 mb-1">
-          <span>{photos.length} photos</span>
-          <span>Need at least {MIN_PHOTOS}</span>
+          <span>{photos.length} / {MAX_PHOTOS} photos</span>
+          <span>{photos.length < MIN_PHOTOS ? `Need at least ${MIN_PHOTOS}` : 'Ready to process'}</span>
         </div>
         <div className="w-full bg-amber-100 rounded-full h-2">
           <div
@@ -106,7 +111,7 @@ export default function CapturePage() {
         </div>
       </div>
 
-      <Camera photos={photos} onPhotos={setPhotos} />
+      <Camera photos={photos} onPhotos={handlePhotos} />
       <PhotoGallery photos={photos} onDelete={handleDelete} />
 
       {error && (
