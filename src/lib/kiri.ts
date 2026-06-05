@@ -45,7 +45,7 @@ function buildMultipart(photos: Buffer[]): { body: Buffer; contentType: string }
     console.log(`[kiri upload] photo ${i}: ${data.byteLength} bytes, first4=${data.slice(0,4).toString('hex')}`)
     parts.push(Buffer.from(
       `--${boundary}\r\n` +
-      `Content-Disposition: form-data; name="file"; filename="${filename}"\r\n` +
+      `Content-Disposition: form-data; name="imagesFiles"; filename="${filename}"\r\n` +
       `Content-Type: image/jpeg\r\n\r\n`
     ))
     parts.push(data)
