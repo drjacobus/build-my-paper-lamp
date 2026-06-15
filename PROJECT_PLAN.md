@@ -18,7 +18,7 @@ If this cannot be proven with raw tools and scripts, adding a polished interface
 
 ### Current Status
 
-Status as of 2026-06-15: **Started; local POC toolchain installed**
+Status as of 2026-06-15: **Started; same-object reconstruction baseline found**
 
 What exists now:
 
@@ -29,6 +29,9 @@ What exists now:
 - POC Conda environment created as `paperlamp-poc`.
 - Reproducible environment file created at `poc/environment.yml`.
 - COLMAP automatic reconstruction wrapper created at `poc/scripts/run-colmap-auto.sh`.
+- COLMAP headless sparse reconstruction wrapper created at `poc/scripts/run-colmap-sparse.sh`.
+- Same-object dataset source notes added for Tiny NeRF Lego and Middlebury DinoRing.
+- Middlebury DinoRing output folder added under `poc/output/middlebury-dino-ring/`.
 
 Initial findings:
 
@@ -42,18 +45,29 @@ Initial findings:
 - pycolmap 3.11.1 is installed and verified.
 - trimesh, shapely, NumPy, scikit-image, SciPy, and Matplotlib are installed and verified.
 - Open3D was tried, failed import due to a TBB/Embree dynamic library mismatch, and was removed.
+- Installed Python libraries were checked for bundled same-object multi-view object test datasets; no useful candidate was found.
+- Tiny NeRF Lego provides 106 same-object synthetic views, but the 100x100 images did not produce a useful COLMAP sparse model.
+- Middlebury DinoRing provides 48 real calibrated same-object views of a matte ceramic dinosaur.
+- COLMAP automatic reconstruction crashed in the headless macOS session because it touched Qt/screen services.
+- Manual COLMAP CLI feature extraction and matching works.
+- Uncalibrated DinoRing COLMAP produced only a small partial model: 3 registered images and 162 sparse points.
+- Calibrated DinoRing COLMAP produced two sparse models covering 47 of 48 images:
+  - model 0: 23 registered images, 704 sparse points, 0.725452 px mean reprojection error;
+  - model 1: 24 registered images, 511 sparse points, 0.807898 px mean reprojection error.
 
 Immediate blocker:
 
-- The first reconstruction is now blocked only on adding a real input image set.
-- The first robust mesh-to-plane conversion may be possible with `trimesh` and `shapely`; Blender remains deferred unless the Python stack is insufficient.
+- We have a working sparse reconstruction baseline, but no dense mesh or printable 2D plane output yet.
+- The next blocker is selecting and proving the dense reconstruction / mesh generation step from the calibrated DinoRing run.
+- The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 
 Next action:
 
-1. Capture 30 to 60 photos of a simple matte object into `poc/input/simple-matte-object/images/`.
-2. Run Experiment 1 with `poc/scripts/run-colmap-auto.sh`.
-3. Record the reconstruction output in `poc/reports/poc-report.md`.
-4. Start mesh-to-plane experiments with `trimesh` and `shapely`.
+1. Use Middlebury DinoRing as the first controlled same-object benchmark.
+2. Convert the calibrated COLMAP sparse result into dense geometry or a silhouette-derived visual hull.
+3. Generate the first raw contour/rib plane SVGs with `trimesh` and `shapely`.
+4. Render the generated planes and compare them against the source object silhouette.
+5. Later, capture our own 30 to 60 photo set once the benchmark pipeline has a working raw path.
 
 ### Goal
 

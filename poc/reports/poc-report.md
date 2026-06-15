@@ -6,6 +6,12 @@ Phase 1 has started. The current objective is to prove that a few object photos 
 
 No end-to-end proof has passed yet.
 
+Current best technical result:
+
+- A controlled same-object benchmark has been found: Middlebury DinoRing.
+- COLMAP sparse reconstruction works on DinoRing when the provided camera calibration is used.
+- The reconstruction is still sparse only; no dense mesh or printable 2D plane output exists yet.
+
 ## Setup Findings
 
 Date: 2026-06-15
@@ -23,11 +29,12 @@ Initial tool availability:
 - POC Python is available at `/opt/anaconda3/envs/paperlamp-poc/bin/python`.
 - pycolmap, trimesh, shapely, NumPy, scikit-image, SciPy, and Matplotlib are available and import successfully in `paperlamp-poc`.
 - Open3D was installed during setup but failed import because of a TBB/Embree dynamic library mismatch. It was removed because it is not needed for the first proof.
+- Installed Python libraries were checked for bundled same-object multi-view object datasets. No useful dataset was found, so external benchmark image sets were used.
 
 Implication:
 
 - We can organize inputs and reports now.
-- We can run the first reconstruction locally with COLMAP after input photos are added.
+- We can run sparse reconstruction locally with COLMAP.
 - We can begin mesh-to-plane experiments with `trimesh` and `shapely` before adding Blender.
 
 ## Phase Gate
@@ -36,32 +43,63 @@ Current status: **Not ready for Phase 2**
 
 Reason:
 
-- No input image set has been tested.
-- No reconstructed mesh has been produced.
+- Input image sets have only been tested through sparse reconstruction.
+- No dense reconstructed mesh has been produced.
 - No printable 2D plane output has been produced.
 - No assembled or rendered validation exists yet.
 
 ## Experiment Results
 
-### Experiment 1: Simple Object Reconstruction
+### Experiment 1: Same-Object Dataset Search
 
-Status: Not started
+Status: Complete for first benchmark
 
-Input object:
+Inputs checked:
 
-- TBD
-
-Planned output:
-
-- Reconstructed mesh
-- Screenshot or render
-- Notes on reconstruction quality
+- Installed Python test/example data from the POC environment.
+- Tiny NeRF Lego.
+- Middlebury DinoRing.
 
 Result:
 
-- TBD
+- Installed library datasets did not include a useful same-object multi-view object set.
+- Tiny NeRF Lego contains 106 views of the same synthetic Lego object, but images are only 100x100 and did not produce a useful COLMAP sparse model.
+- Middlebury DinoRing contains 48 calibrated real views of the same matte ceramic dinosaur and is now the first Phase 1 benchmark.
 
-### Experiment 2: Recognizable Organic Object
+### Experiment 2: COLMAP Sparse Reconstruction
+
+Status: Partial pass
+
+Input object:
+
+- Middlebury DinoRing, 48 images of the same matte ceramic dinosaur.
+
+Commands:
+
+```bash
+poc/scripts/run-colmap-sparse.sh \
+  poc/input/middlebury-dino-ring/images \
+  poc/output/middlebury-dino-ring/reconstruction/colmap-sparse-calibrated \
+  PINHOLE \
+  3310.4,3325.5,316.73,200.55
+```
+
+Results:
+
+- COLMAP automatic reconstruction crashed in the headless macOS session because it touched Qt/screen services.
+- Manual COLMAP CLI feature extraction and exhaustive matching worked.
+- Uncalibrated DinoRing sparse mapping produced only 3 registered images and 162 sparse points.
+- Calibrated DinoRing sparse mapping produced two sparse models:
+  - model 0: 23 registered images, 704 sparse points, 4804 observations, 0.725452 px mean reprojection error;
+  - model 1: 24 registered images, 511 sparse points, 3309 observations, 0.807898 px mean reprojection error.
+
+Interpretation:
+
+- The calibrated image set is good enough for local sparse reconstruction.
+- The sparse output does not yet satisfy Phase 1 because it is not a dense object mesh and cannot directly become printable planes.
+- The next raw proof step should test dense geometry or a silhouette-derived visual hull from the DinoRing images.
+
+### Experiment 3: Recognizable Organic Object
 
 Status: Not started
 
@@ -79,7 +117,7 @@ Result:
 
 - TBD
 
-### Experiment 3: Printable Plane Strategy
+### Experiment 4: Printable Plane Strategy
 
 Status: Not started
 
@@ -94,7 +132,7 @@ Result:
 
 - TBD
 
-### Experiment 4: Physical Or Rendered Validation
+### Experiment 5: Physical Or Rendered Validation
 
 Status: Not started
 
@@ -115,12 +153,14 @@ Result:
 - Photogrammetry may fail on glossy, transparent, low-texture, or thin objects.
 - Full papercraft unfolding may create too many small pieces for a good product.
 - The most promising MVP may be contour/rib lamp construction rather than true unfolded surface reconstruction.
-- Local machine tool availability is not yet confirmed.
+- Sparse reconstruction alone may not contain enough surface information for printable plane generation.
+- Dense reconstruction may require additional COLMAP steps, Blender, Meshroom/AliceVision, or a custom silhouette/visual-hull path.
+- Public benchmark success may not transfer directly to casual phone photos.
 
 ## Next Actions
 
-1. Choose the first simple matte object.
-2. Capture 30 to 60 photos into `poc/input/simple-matte-object/images/`.
-3. Run the first reconstruction attempt with `poc/scripts/run-colmap-auto.sh`.
-4. Record outputs and failures in this report.
-5. Begin mesh-to-plane experiments using `trimesh` and `shapely`.
+1. Run a dense geometry attempt from the calibrated DinoRing reconstruction.
+2. In parallel, test a silhouette-derived visual-hull or contour/rib approach using the DinoRing masks/background.
+3. Generate first raw SVG/PDF plane outputs with `trimesh` and `shapely`.
+4. Render the planes in 3D and compare against the DinoRing source images.
+5. Capture our own object photos only after the benchmark path produces inspectable plane output.

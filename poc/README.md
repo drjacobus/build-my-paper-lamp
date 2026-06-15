@@ -17,6 +17,8 @@ poc/
   input/
     simple-matte-object/images/
     recognizable-organic-object/images/
+    synthetic-lego-nerf/SOURCE.md
+    middlebury-dino-ring/SOURCE.md
     final-lamp-candidate/images/
   output/
     simple-matte-object/
@@ -76,10 +78,24 @@ Check installed tools with:
 poc/scripts/check-tools.sh
 ```
 
-Run the first COLMAP automatic reconstruction attempt with:
+Run the first COLMAP sparse reconstruction attempt with:
 
 ```bash
-poc/scripts/run-colmap-auto.sh \
+poc/scripts/run-colmap-sparse.sh \
   poc/input/simple-matte-object/images \
   poc/output/simple-matte-object/reconstruction/colmap-auto
 ```
+
+The older `run-colmap-auto.sh` wrapper is still available, but `automatic_reconstructor` can touch Qt/screen services and has crashed in headless macOS sessions. Prefer `run-colmap-sparse.sh`.
+
+Run the calibrated Middlebury DinoRing baseline with:
+
+```bash
+poc/scripts/run-colmap-sparse.sh \
+  poc/input/middlebury-dino-ring/images \
+  poc/output/middlebury-dino-ring/reconstruction/colmap-sparse-calibrated \
+  PINHOLE \
+  3310.4,3325.5,316.73,200.55
+```
+
+The raw DinoRing images and generated COLMAP outputs are intentionally gitignored. The source notes and measured results live in `poc/input/middlebury-dino-ring/SOURCE.md` and `poc/reports/poc-report.md`.

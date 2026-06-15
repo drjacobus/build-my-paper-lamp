@@ -9,3 +9,16 @@ out/
 next-env.d.ts
 .vercel
 .DS_Store
+__pycache__/
+*.pyc
+
+# Phase 1 POC datasets and generated artifacts can be large.
+poc/input/**/raw/*
+poc/input/**/images/*
+!poc/input/**/SOURCE.md
+poc/output/**/reconstruction/*
+poc/output/**/cleaned-mesh/*
+poc/output/**/printable-planes/*
+poc/output/**/renders/*
+!poc/output/**/.gitkeep
+!poc/output/**/assembly-notes.md
