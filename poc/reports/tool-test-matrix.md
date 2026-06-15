@@ -46,7 +46,7 @@ Each tool or pipeline must be evaluated against the same checklist:
 | --- | --- | --- | --- | --- | --- | --- |
 | Blender Python | Missing | Not tested | Not tested | Scriptable | Deferred | We will first try `trimesh` + `shapely` for slicing before adding Blender. |
 | Papercraft unfold tool | Unknown | Not tested | Not tested | Unknown | Not started | Risk: too many tiny parts for organic forms. |
-| Custom lamp-plane script | Implemented as first visual-hull/rib prototype | Middlebury DinoRing | SVG rib sheet | Fully scriptable | Partial pass | Produced a rough visual hull and 12-rib SVG from calibrated silhouettes. Needs cleanup, slots, rendering, and recognizability validation. |
+| Custom lamp-plane script | Implemented as first visual-hull/rib prototype | Middlebury DinoRing | SVG rib sheet plus 3D rib render | Fully scriptable | Partial pass | Produced a rough visual hull, 12-rib SVG, and 20-rib orthogonal assembly render. Shape is still too noisy for a phase pass. |
 
 ## Tool Test Log
 
@@ -99,8 +99,10 @@ Each tool or pipeline must be evaluated against the same checklist:
 - COLMAP `patch_match_stereo` failed because the installed COLMAP build requires CUDA for dense stereo on this machine.
 - Added `build-visual-hull.py` to test a silhouette-derived route using the DinoRing camera calibration and good-silhouette image list.
 - Visual-hull result at 64^3 resolution:
-  - 77,739 occupied voxels out of 262,144;
-  - OBJ mesh with 21,566 vertices and 43,336 faces;
+  - 78,721 occupied voxels out of 262,144 after cleanup;
+  - OBJ mesh with 20,738 vertices and 41,564 faces;
   - mesh is not watertight yet;
   - generated a 12-rib SVG sheet.
-- Conclusion: the silhouette path produced the first raw image-to-plane artifact. It is still a rough prototype, but it avoids the local CUDA blocker.
+- Added `render-rib-assembly.py` to generate a 20-rib orthogonal assembly OBJ and multi-view PNG render from the voxel hull.
+- A stricter temporary visual-hull test with `--min-consensus 1.0` reduced occupancy to 57,436 voxels, but did not fix recognizability enough to replace the baseline.
+- Conclusion: the silhouette path produced the first raw image-to-plane and image-to-rib-render artifacts. It is still a rough prototype, but it avoids the local CUDA blocker.

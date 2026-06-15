@@ -31,6 +31,7 @@ What exists now:
 - COLMAP automatic reconstruction wrapper created at `poc/scripts/run-colmap-auto.sh`.
 - COLMAP headless sparse reconstruction wrapper created at `poc/scripts/run-colmap-sparse.sh`.
 - Silhouette visual-hull and rib SVG script created at `poc/scripts/build-visual-hull.py`.
+- Orthogonal rib assembly render script created at `poc/scripts/render-rib-assembly.py`.
 - Same-object dataset source notes added for Tiny NeRF Lego and Middlebury DinoRing.
 - Middlebury DinoRing output folder added under `poc/output/middlebury-dino-ring/`.
 
@@ -58,22 +59,27 @@ Initial findings:
 - COLMAP image undistortion worked for the calibrated DinoRing model 0.
 - COLMAP dense stereo failed locally because this COLMAP build requires CUDA for dense reconstruction.
 - DinoRing silhouette visual hull at 64^3 generated:
-  - 77,739 occupied voxels out of 262,144;
-  - rough OBJ mesh with 21,566 vertices and 43,336 faces;
+  - 78,721 occupied voxels out of 262,144 after cleanup;
+  - rough OBJ mesh with 20,738 vertices and 41,564 faces;
   - first 12-rib SVG sheet at `poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull-ribs.svg`.
+- A 20-rib orthogonal assembly render was generated from the voxel hull:
+  - 10 ribs along the x-axis;
+  - 10 ribs along the y-axis;
+  - render output at `poc/output/middlebury-dino-ring/renders/dino-rib-assembly-views.png`.
+- The rendered rib assembly forms a 3D volume, but it is still too noisy and weakly recognizable compared with the source dinosaur.
 
 Immediate blocker:
 
-- We have a working sparse reconstruction baseline and a first rough silhouette-derived rib SVG.
-- The visual-hull mesh is rough and not watertight yet, so the next blocker is cleanup, recognizability validation, and better rib generation.
+- We have a working sparse reconstruction baseline, a first rough silhouette-derived rib SVG, and a rendered orthogonal rib assembly.
+- The visual-hull mesh is rough and not watertight yet, and the rendered rib assembly is not recognizable enough to pass the phase gate.
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 
 Next action:
 
-1. Improve the visual-hull output so the OBJ is clean enough for stable slicing and rendering.
+1. Improve shape fidelity before adding product features: tighter masks, better contour filtering, and higher-resolution visual hull tests.
 2. Improve the generated rib SVG: reduce noisy contours, add slots, normalize scale, and split across printable pages.
-3. Render the rib planes in 3D and compare them against the Dino source silhouette.
-4. Repeat the pipeline at a higher voxel resolution if the 64^3 result remains recognizable.
+3. Add a side-by-side validation render against source silhouettes.
+4. Repeat the pipeline at a higher voxel resolution if the cleaned 64^3 result becomes recognizable.
 5. Later, capture our own 30 to 60 photo set once the benchmark pipeline has a working raw path.
 
 ### Goal

@@ -12,6 +12,7 @@ Current best technical result:
 - COLMAP sparse reconstruction works on DinoRing when the provided camera calibration is used.
 - COLMAP dense stereo is blocked locally by a CUDA requirement.
 - A silhouette-derived visual hull produced the first rough OBJ and 12-rib SVG sheet.
+- A 20-rib orthogonal assembly render exists, but recognizability is still weak.
 
 ## Setup Findings
 
@@ -46,8 +47,8 @@ Reason:
 
 - Input image sets have only been tested through sparse reconstruction.
 - No clean dense reconstructed mesh has been produced.
-- A rough printable-style 2D rib SVG exists, but it has not been cleaned, slotted, printed, or rendered as an assembly.
-- No assembled or rendered validation exists yet.
+- A rough printable-style 2D rib SVG exists, but it has not been cleaned, slotted, printed, or paged.
+- A rendered rib assembly exists, but it is not yet recognizable enough to pass Phase 1.
 
 ## Experiment Results
 
@@ -147,8 +148,8 @@ Generated outputs:
 
 Measured result:
 
-- 77,739 occupied voxels out of 262,144.
-- OBJ mesh: 21,566 vertices and 43,336 faces.
+- 78,721 occupied voxels out of 262,144 after cleanup.
+- OBJ mesh: 20,738 vertices and 41,564 faces.
 - Mesh watertight check: false.
 - SVG output: 12 rib contours.
 
@@ -158,7 +159,44 @@ Interpretation:
 - It does not yet pass Phase 1 because the ribs are noisy, unslotted, unpaged, and not yet rendered or physically assembled.
 - The path is promising because it avoids the CUDA blocker and aligns with the lamp-plane product direction.
 
-### Experiment 5: Recognizable Organic Object
+### Experiment 5: Orthogonal Rib Assembly Render
+
+Status: Partial pass
+
+Input:
+
+- `poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull-voxels.npz`
+
+Command:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-rib-assembly.py \
+  --voxel-file poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull-voxels.npz \
+  --output-dir poc/output/middlebury-dino-ring/renders \
+  --x-ribs 10 \
+  --y-ribs 10 \
+  --simplify 2.0
+```
+
+Generated outputs:
+
+- `poc/output/middlebury-dino-ring/renders/dino-rib-assembly.obj`
+- `poc/output/middlebury-dino-ring/renders/dino-rib-assembly.png`
+- `poc/output/middlebury-dino-ring/renders/dino-rib-assembly-views.png`
+
+Measured result:
+
+- 20 total ribs:
+  - 10 x-axis ribs;
+  - 10 y-axis ribs.
+
+Interpretation:
+
+- The output now forms an inspectable 3D rib assembly, not just isolated 2D outlines.
+- The object is still too noisy and weakly recognizable compared with the curled stegosaurus source image.
+- This is progress toward Phase 1, but not a pass.
+
+### Experiment 6: Recognizable Organic Object
 
 Status: Not started
 
@@ -176,7 +214,7 @@ Result:
 
 - TBD
 
-### Experiment 6: Printable Plane Strategy
+### Experiment 7: Printable Plane Strategy
 
 Status: Not started
 
@@ -191,7 +229,7 @@ Result:
 
 - TBD
 
-### Experiment 7: Physical Or Rendered Validation
+### Experiment 8: Physical Or Rendered Validation
 
 Status: Not started
 
@@ -218,8 +256,8 @@ Result:
 
 ## Next Actions
 
-1. Clean the visual-hull mesh and rib contours.
+1. Improve mask quality and contour filtering until the Dino rib render is recognizably related to the source object.
 2. Add slot generation and page layout to the SVG rib output.
-3. Render the 12 rib planes in 3D and compare against the DinoRing source images.
-4. Repeat at a higher voxel resolution if the low-resolution hull remains recognizable.
-5. Capture our own object photos only after the benchmark path produces an inspectable rendered assembly.
+3. Add side-by-side rendered validation against one or more source silhouettes.
+4. Repeat at a higher voxel resolution once the 64^3 result is cleaner.
+5. Capture our own object photos only after the benchmark path produces a recognizable rendered assembly.

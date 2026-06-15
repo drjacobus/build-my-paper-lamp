@@ -113,3 +113,16 @@ Run the first silhouette visual-hull and rib SVG attempt with:
 ```
 
 This produces a rough voxel hull, OBJ, and SVG rib sheet under `poc/output/middlebury-dino-ring/printable-planes/`. Those generated artifacts are ignored by git.
+
+Render an orthogonal rib assembly preview with:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-rib-assembly.py \
+  --voxel-file poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull-voxels.npz \
+  --output-dir poc/output/middlebury-dino-ring/renders \
+  --x-ribs 10 \
+  --y-ribs 10 \
+  --simplify 2.0
+```
+
+This produces a 3D rib OBJ plus single-view and multi-view PNG renders. These generated artifacts are also ignored by git.

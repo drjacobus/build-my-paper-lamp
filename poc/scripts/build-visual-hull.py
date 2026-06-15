@@ -138,6 +138,18 @@ def write_rib_svg(path: Path, occupancy: np.ndarray, bounds: np.ndarray, rib_cou
     return len(contours)
 
 
+def clean_occupancy(occupancy: np.ndarray) -> np.ndarray:
+    occupancy = morphology.closing(occupancy, morphology.ball(1))
+    labels = measure.label(occupancy)
+    if labels.max() == 0:
+        return occupancy
+
+    component_sizes = np.bincount(labels.ravel())
+    component_sizes[0] = 0
+    largest_label = int(component_sizes.argmax())
+    return labels == largest_label
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--image-dir", type=Path, required=True)
@@ -148,6 +160,7 @@ def main() -> None:
     parser.add_argument("--threshold", type=float, default=0.19)
     parser.add_argument("--min-consensus", type=float, default=0.9)
     parser.add_argument("--rib-count", type=int, default=12)
+    parser.add_argument("--no-clean", action="store_true")
     args = parser.parse_args()
 
     cameras = parse_cameras(args.camera_file)
@@ -179,6 +192,9 @@ def main() -> None:
     required_votes = np.ceil(valid_views * args.min_consensus).astype(np.uint16)
     occupancy = (valid_views > 0) & (votes >= required_votes)
     occupancy_grid = occupancy.reshape((args.resolution, args.resolution, args.resolution))
+    raw_occupied = int(occupancy_grid.sum())
+    if not args.no_clean:
+        occupancy_grid = clean_occupancy(occupancy_grid)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     voxel_path = args.output_dir / "dino-visual-hull-voxels.npz"
@@ -202,7 +218,7 @@ def main() -> None:
     rib_total = write_rib_svg(svg_path, occupancy_grid, DINO_BOUNDS, args.rib_count)
 
     occupied = int(occupancy_grid.sum())
-    print(f"occupied voxels: {occupied}/{occupancy_grid.size}")
+    print(f"occupied voxels: {occupied}/{occupancy_grid.size} (raw: {raw_occupied})")
     print(f"wrote {voxel_path}")
     print(f"wrote {obj_path} ({len(vertices)} vertices, {len(faces)} faces)")
     print(f"wrote {svg_path} ({rib_total} ribs)")
