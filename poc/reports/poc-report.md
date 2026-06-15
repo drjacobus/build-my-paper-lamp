@@ -22,8 +22,11 @@ Current best technical result:
 - COLMAP recovered a partial sparse Bunny model:
   - uncalibrated: 27 of 48 registered images, 501 sparse points, 0.871273 px mean reprojection error;
   - fixed `SIMPLE_PINHOLE`: 39 of 48 registered images, 1054 sparse points, 0.971214 px mean reprojection error.
+- A tuned fixed-camera COLMAP mapper run improved this to 43 of 48 registered images, 2139 sparse points, and 0.826889 px mean reprojection error.
 - The best sparse Bunny point cloud was exported and rendered for visual inspection; it hints at ears/body shape but is not a usable surface.
-- This confirms camera/image quality matters, but the current local path still does not produce the clean source mesh needed by the product.
+- COLMAP sparse-input Delaunay meshing produced a mesh, but visual inspection failed: the result is a stretched spike-like artifact, not a recognizable Bunny.
+- COLMAP Poisson meshing failed on the sparse PLY because it lacks normal fields such as `nx`.
+- This confirms camera/image quality matters, but the current local COLMAP path still does not produce the clean source mesh needed by the product.
 
 ## Setup Findings
 
@@ -63,6 +66,7 @@ Reason:
 - A raw faceted triangle template exists, but it lacks tabs, connected unfolding, page layout, and assembly validation.
 - The connected Bunny net has tabs and connected islands, but still lacks page layout, fold-line styling, and assembly validation.
 - A controlled Bunny benchmark produces recognizable faceted shell output, but the best image-derived Bunny result is still sparse geometry rather than a usable mesh.
+- COLMAP should not be treated as a Phase 1A pass yet. It remains useful, but the current result is not satisfying enough for the product.
 
 ## Experiment Results
 
@@ -381,7 +385,7 @@ Interpretation:
 
 ### Experiment 10: Bunny Rendered-Image Sparse Reconstruction
 
-Status: Partial pass as a diagnostic; not sufficient for product
+Status: Unsatisfying partial pass as a diagnostic; not sufficient for product
 
 Input object:
 
@@ -426,6 +430,64 @@ poc/scripts/run-colmap-sparse.sh \
   --output poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated/sparse-bunny-calibrated-preview.png
 ```
 
+```bash
+mkdir -p poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc colmap mapper \
+  --database_path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated/database.db \
+  --image_path poc/input/stanford-bunny/images \
+  --output_path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse \
+  --Mapper.ba_refine_focal_length false \
+  --Mapper.ba_refine_principal_point false \
+  --Mapper.ba_refine_extra_params false \
+  --Mapper.min_num_matches 6 \
+  --Mapper.init_min_num_inliers 30 \
+  --Mapper.abs_pose_min_num_inliers 15 \
+  --Mapper.tri_ignore_two_view_tracks false \
+  --Mapper.multiple_models false
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc colmap model_analyzer \
+  --path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse/0
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc colmap model_converter \
+  --input_path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse/0 \
+  --output_path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse-bunny-tuned.ply \
+  --output_type PLY
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-point-cloud.py \
+  --input poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse-bunny-tuned.ply \
+  --output poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse-bunny-tuned-preview.png
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc colmap delaunay_mesher \
+  --input_path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse/0 \
+  --input_type sparse \
+  --output_path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse-bunny-delaunay.ply
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-faceted-shell.py \
+  --input-mesh poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse-bunny-delaunay.ply \
+  --output-dir poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned \
+  --face-counts 300 800 1600 \
+  --name-prefix sparse-bunny-delaunay
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc colmap poisson_mesher \
+  --input_path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse-bunny-tuned.ply \
+  --output_path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse-bunny-poisson.ply
+```
+
 Measured result:
 
 - Uncalibrated run:
@@ -445,13 +507,37 @@ Measured result:
 - Exported preview:
   - `poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated/sparse-bunny-calibrated-preview.png`;
   - visual read: the point cloud hints at the Bunny ears and seated body, but remains sparse and incomplete.
+- Tuned fixed-camera mapper run:
+  - 43 registered images out of 48;
+  - 2139 sparse points;
+  - 7258 observations;
+  - 3.393174 mean track length;
+  - 168.790698 mean observations per image;
+  - 0.826889 px mean reprojection error.
+- Tuned exported preview:
+  - `poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse-bunny-tuned-preview.png`;
+  - visual read: denser and more recognizable than the previous sparse point cloud, but still not a mesh.
+- Sparse Delaunay mesh:
+  - `poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse-bunny-delaunay.ply`;
+  - 995 vertices;
+  - 1978 faces;
+  - not watertight;
+  - 4 connected components.
+- Sparse Delaunay visual result:
+  - `poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated-tuned/sparse-bunny-delaunay-faceted-shell-variants.png`;
+  - visual read: failed; the mesh becomes a long spike-like artifact and does not preserve Bunny shape.
+- Poisson result:
+  - failed with `Failed to find property in ply file: nx`;
+  - the sparse PLY does not contain normals required by this mesher.
 
 Interpretation:
 
 - Fixed camera assumptions materially improved registration coverage.
+- Relaxed mapper thresholds improved the sparse Bunny result further.
 - The synthetic Bunny views are useful as a reconstruction diagnostic but are not equivalent to real phone photos.
 - Sparse COLMAP output alone is not a product-ready source shape. It gives camera poses and points, not a watertight mesh suitable for faceting/unfolding.
-- The current first-part blocker is therefore: choose or build a route from images to usable mesh. Candidate routes are non-CUDA dense photogrammetry, silhouette visual hull with camera poses, or an image-conditioned mesh provider that returns downloadable OBJ/GLB/STL.
+- Sparse Delaunay and Poisson do not rescue the local COLMAP path.
+- Phase 1A conclusion for now: local COLMAP is useful for camera recovery and diagnostic sparse structure, but not satisfying enough as the product's image-to-mesh engine on this setup.
 
 ### Experiment 11: User-Captured Recognizable Organic Object
 
@@ -514,8 +600,8 @@ Result:
 
 ## Next Actions
 
-1. Treat Stanford Bunny as the controlled benchmark for source-shape quality.
-2. Test one route that produces a real mesh from the Bunny images, not just a sparse point cloud.
-3. Compare three candidate image-to-3D routes: non-CUDA/local photogrammetry, silhouette visual hull using recovered or controlled cameras, and image-conditioned mesh generation with downloadable output.
-4. Only return to connected-net polish after the source mesh route is credible.
-5. Capture our own object photos after the image-to-3D route works on the controlled benchmark.
+1. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.
+2. Continue Phase 1A by testing the next image-to-mesh candidate that can output an actual mesh.
+3. Prefer candidates that can be tested raw on the Bunny benchmark before any UI or product logic.
+4. Keep the object-description input idea in mind for image-conditioned mesh generation, but verify outputs geometrically because text can hallucinate shape.
+5. Only return to connected-net polish after the source mesh route is credible.

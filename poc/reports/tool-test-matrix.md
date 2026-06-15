@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Phase 1 has started. No tool has passed the full image-to-printable-kit proof yet. COLMAP has a working sparse reconstruction baseline, and Bunny now proves the downstream mesh-to-faceted-template path when the source mesh is already clean.
+Phase 1 has started. No tool has passed the full image-to-printable-kit proof yet. COLMAP is still under active Phase 1A evaluation because its current local result is sparse/partial and not satisfying enough as the product's image-to-3D source.
 
 Initial local availability check:
 
@@ -36,7 +36,7 @@ Each tool or pipeline must be evaluated against the same checklist:
 
 | Tool | Local availability | Input tested | Mesh output | Automation path | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| COLMAP | Installed in `paperlamp-poc` | Tiny NeRF Lego, Middlebury DinoRing, Stanford Bunny rendered views | Sparse reconstruction only so far | CLI | Partial pass | Tiny NeRF failed to produce useful sparse geometry. Calibrated DinoRing produced two sparse models covering 47 of 48 images. Bunny rendered views produced 39/48 registered images and 1054 sparse points with fixed `SIMPLE_PINHOLE` intrinsics. Dense stereo failed locally because this COLMAP build requires CUDA. |
+| COLMAP | Installed in `paperlamp-poc` | Tiny NeRF Lego, Middlebury DinoRing, Stanford Bunny rendered views | Sparse reconstruction plus failed sparse mesh attempt | CLI | Diagnostic only for now | Tiny NeRF failed to produce useful sparse geometry. Calibrated DinoRing produced two sparse models covering 47 of 48 images. Bunny rendered views improved to 43/48 registered images and 2139 sparse points with fixed intrinsics plus relaxed mapper settings. Sparse Delaunay meshing produced an unusable spike-like mesh; Poisson failed because sparse PLY lacks normals. Dense stereo failed locally because this COLMAP build requires CUDA. |
 | Meshroom / AliceVision | Missing | Not tested | Not tested | CLI/GUI mixed | Blocked until installed | Useful comparison if available. |
 | Cloud/API image-to-3D | Existing repo client stub for Tripo; not validated in Phase 1 | Not tested in current POC | Not tested | API-dependent | Not started | Only useful if it returns downloadable meshes. Text descriptions may help semantic shape, but outputs must be checked for hallucinated geometry. |
 
@@ -173,4 +173,24 @@ Each tool or pipeline must be evaluated against the same checklist:
   - 4987 observations;
   - 0.971214 px mean reprojection error.
 - Exported and rendered the calibrated sparse point cloud to `sparse-bunny-calibrated-preview.png`.
-- Conclusion: camera assumptions significantly improve registration, and the sparse cloud visually hints at Bunny ears/body. Sparse reconstruction is still not enough for the product. The current blocker is image-to-usable-mesh, not mesh-to-template.
+- Tuned the mapper with relaxed thresholds:
+  - `--Mapper.min_num_matches 6`;
+  - `--Mapper.init_min_num_inliers 30`;
+  - `--Mapper.abs_pose_min_num_inliers 15`;
+  - `--Mapper.tri_ignore_two_view_tracks false`;
+  - `--Mapper.multiple_models false`.
+- Tuned fixed-camera result:
+  - 43 registered images;
+  - 2139 sparse points;
+  - 7258 observations;
+  - 0.826889 px mean reprojection error.
+- Exported and rendered the tuned sparse point cloud to `sparse-bunny-tuned-preview.png`.
+- Ran COLMAP sparse-input Delaunay meshing on the tuned sparse model.
+- Delaunay output:
+  - 995 vertices;
+  - 1978 faces;
+  - not watertight;
+  - 4 connected components.
+- Rendered Delaunay faceted variants. Visual result is a long spike-like artifact, not a recognizable Bunny.
+- Ran COLMAP Poisson meshing on the tuned sparse PLY. It failed because the sparse PLY has no normal field such as `nx`.
+- Conclusion: tuned COLMAP improves sparse camera/point recovery, but local COLMAP does not currently produce a satisfying mesh for this product. Treat it as a diagnostic/camera-recovery tool and move Phase 1A to the next image-to-mesh candidate.

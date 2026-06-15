@@ -20,7 +20,7 @@ If this cannot be proven with raw tools and scripts, adding a polished interface
 
 ### Current Status
 
-Status as of 2026-06-15: **Started; downstream Bunny template proof exists, now refocused on image-to-3D source quality**
+Status as of 2026-06-15: **Started; Phase 1A still active because COLMAP is not yet satisfying enough**
 
 What exists now:
 
@@ -90,7 +90,10 @@ Initial findings:
 - Bunny rendered-image COLMAP sparse reconstruction was tested:
   - uncalibrated run: 27 of 48 registered images, 501 sparse points, 0.871273 px mean reprojection error;
   - fixed `SIMPLE_PINHOLE` run: 39 of 48 registered images, 1054 sparse points, 0.971214 px mean reprojection error.
+- A tuned fixed-camera COLMAP mapper run improved the Bunny sparse result to 43 of 48 registered images, 2139 sparse points, and 0.826889 px mean reprojection error.
 - The calibrated Bunny sparse point cloud visually hints at ears/body silhouette, but remains far from a usable mesh.
+- COLMAP sparse-input Delaunay meshing produced a mesh, but the rendered result is a stretched spike-like artifact and not a recognizable Bunny.
+- COLMAP Poisson meshing failed on the sparse PLY because the export has no normal fields such as `nx`.
 
 Immediate blocker:
 
@@ -98,15 +101,16 @@ Immediate blocker:
 - The faceted shell path is closer to the target paperlamp kit than the rib path.
 - Bunny shows that a cleaner, clearer animal source can preserve recognizable shape through low-poly faceting.
 - The remaining blocker is no longer "can a recognizable source become a faceted template"; it is "can user-provided images produce a source shape clean enough for that template path."
-- COLMAP can recover partial sparse Bunny geometry from rendered images, especially with fixed camera assumptions, but this is not enough by itself because the product needs a usable mesh, not just camera poses and sparse points.
+- COLMAP can recover partial sparse Bunny geometry from rendered images, especially with fixed camera assumptions and relaxed mapper thresholds, but this is not enough by itself because the product needs a usable mesh, not just camera poses and sparse points.
+- Local COLMAP should now be treated as a diagnostic/camera-recovery baseline, not a satisfying Phase 1A image-to-mesh solution.
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 
 Next action:
 
 1. Promote Stanford Bunny to the controlled shape-fidelity benchmark.
 2. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
-3. Focus Phase 1C on obtaining Bunny-quality source geometry from images.
-4. Test image-to-mesh options end to end with no UI and no product wrapper.
+3. Record COLMAP as useful but not satisfying enough for Phase 1A on this local setup.
+4. Continue Phase 1A by testing the next image-to-mesh option that can output an actual mesh.
 5. Return to connected-net polish only after the image-to-3D source step has a credible route.
 
 ### Goal
