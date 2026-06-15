@@ -4,7 +4,7 @@
 
 Phase 1 has started. The current objective is to prove that a few object photos can become printable 2D planes that assemble into a recognizable 3D object.
 
-No end-to-end proof has passed yet.
+The first constrained image-to-printable-net proof has passed on a controlled benchmark.
 
 Current best technical result:
 
@@ -27,6 +27,10 @@ Current best technical result:
 - COLMAP sparse-input Delaunay meshing produced a mesh, but visual inspection failed: the result is a stretched spike-like artifact, not a recognizable Bunny.
 - COLMAP Poisson meshing failed on the sparse PLY because it lacks normal fields such as `nx`.
 - This confirms camera/image quality matters, but the current local COLMAP path still does not produce the clean source mesh needed by the product.
+- A non-Tripo controlled turntable visual-hull route now converts Bunny images into a usable watertight mesh.
+- The full 48-image Bunny capture produced a watertight mesh, a 300-face watertight shell, and a connected SVG net with 22 islands and 129 glue tabs.
+- A reduced 12-image Bunny subset, matching the intended app input count, also produced a watertight mesh, a 300-face watertight shell, and a connected SVG net with 21 islands and 131 glue tabs.
+- This should be treated as a pass only under explicit capture constraints: same object, centered, clean/white background, enough silhouette coverage, and known or estimated viewing angles.
 
 ## Setup Findings
 
@@ -55,18 +59,18 @@ Implication:
 
 ## Phase Gate
 
-Current status: **Not ready for Phase 2**
+Current status: **Phase 1A constrained pass; not ready for full Phase 2 UI**
 
 Reason:
 
-- Input image sets have only been tested through sparse reconstruction.
-- No clean dense reconstructed mesh has been produced.
+- A clean image-derived mesh has now been produced through controlled turntable visual hull, not through COLMAP dense reconstruction.
 - A rough printable-style 2D rib SVG exists, but it has not been cleaned, slotted, printed, or paged.
 - A rendered rib assembly exists, but it is not yet recognizable enough to pass Phase 1.
 - A raw faceted triangle template exists, but it lacks tabs, connected unfolding, page layout, and assembly validation.
 - The connected Bunny net has tabs and connected islands, but still lacks page layout, fold-line styling, and assembly validation.
-- A controlled Bunny benchmark produces recognizable faceted shell output, but the best image-derived Bunny result is still sparse geometry rather than a usable mesh.
+- A controlled Bunny benchmark now proves the core transformation from 12 clean turntable images to mesh to faceted shell to connected SVG net.
 - COLMAP should not be treated as a Phase 1A pass yet. It remains useful, but the current result is not satisfying enough for the product.
+- Before investing heavily in UI, the same controlled visual-hull route should be validated on at least one real phone-captured object with a clean background.
 
 ## Experiment Results
 
@@ -539,7 +543,79 @@ Interpretation:
 - Sparse Delaunay and Poisson do not rescue the local COLMAP path.
 - Phase 1A conclusion for now: local COLMAP is useful for camera recovery and diagnostic sparse structure, but not satisfying enough as the product's image-to-mesh engine on this setup.
 
-### Experiment 11: User-Captured Recognizable Organic Object
+### Experiment 11: Controlled Turntable Visual-Hull Mesh
+
+Status: Constrained pass
+
+Input object:
+
+- Stanford Bunny rendered turntable views.
+- Full test: 48 images from two elevation rings.
+- Reduced app-like test: 12 images from two elevation rings.
+
+Commands:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/build-turntable-visual-hull.py \
+  --image-dir poc/input/stanford-bunny/images \
+  --output-dir poc/output/stanford-bunny/reconstruction/turntable-visual-hull \
+  --name-prefix stanford-bunny-turntable \
+  --resolution 96 \
+  --min-consensus 0.90 \
+  --mask-threshold 18
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/build-turntable-visual-hull.py \
+  --image-dir poc/input/stanford-bunny/images-12-turntable \
+  --output-dir poc/output/stanford-bunny/reconstruction/turntable-visual-hull-12views \
+  --name-prefix stanford-bunny-12view-turntable \
+  --resolution 96 \
+  --views-per-elevation 24 \
+  --min-consensus 0.90 \
+  --mask-threshold 18
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-faceted-shell.py \
+  --input-mesh poc/output/stanford-bunny/reconstruction/turntable-visual-hull-12views/stanford-bunny-12view-turntable-visual-hull.obj \
+  --output-dir poc/output/stanford-bunny/reconstruction/turntable-visual-hull-12views \
+  --face-counts 300 600 1200 \
+  --name-prefix stanford-bunny-12view-turntable-visual-hull
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/export-connected-nets.py \
+  --input-mesh poc/output/stanford-bunny/reconstruction/turntable-visual-hull-12views/stanford-bunny-12view-turntable-visual-hull-faceted-shell-300.obj \
+  --output-svg poc/output/stanford-bunny/reconstruction/turntable-visual-hull-12views/stanford-bunny-12view-turntable-visual-hull-connected-net-300.svg \
+  --target-max-mm 250 \
+  --max-faces-per-island 24
+```
+
+Measured result:
+
+- 48-image visual hull:
+  - 23,192 occupied voxels out of 884,736 after cleanup;
+  - OBJ mesh with 6966 vertices and 13,928 faces;
+  - watertight mesh;
+  - 300-face shell remains watertight;
+  - connected net export with 22 islands and 129 glue tabs.
+- 12-image visual hull:
+  - 24,085 occupied voxels out of 884,736 after cleanup;
+  - OBJ mesh with 7468 vertices and 14,940 faces;
+  - watertight mesh;
+  - 300 target faces -> 300 faces, 152 vertices, watertight;
+  - 600 and 1200 face variants generated but not watertight after simplification;
+  - connected net export with 21 islands and 131 glue tabs.
+
+Interpretation:
+
+- This is the first route that satisfies the raw technical requirement under controlled capture constraints.
+- The app should ask for roughly 10 to 15 images from different angles of the same object, ideally against a white or high-contrast background.
+- This does not prove arbitrary-photo reconstruction. It proves a guided capture flow can make the problem tractable.
+- The 300-face shell is currently the safest paperlamp candidate because it stayed watertight on the 12-image test.
+
+### Experiment 12: User-Captured Recognizable Organic Object
 
 Status: Not started
 
@@ -557,7 +633,7 @@ Result:
 
 - TBD
 
-### Experiment 12: Printable Plane Strategy
+### Experiment 13: Printable Plane Strategy
 
 Status: Not started
 
@@ -572,7 +648,7 @@ Result:
 
 - TBD
 
-### Experiment 13: Physical Or Rendered Validation
+### Experiment 14: Physical Or Rendered Validation
 
 Status: Not started
 
@@ -595,13 +671,13 @@ Result:
 - The most promising MVP may be contour/rib lamp construction rather than true unfolded surface reconstruction.
 - Sparse reconstruction alone may not contain enough surface information for printable plane generation.
 - Dense reconstruction may require additional COLMAP steps, Blender, Meshroom/AliceVision, or a custom silhouette/visual-hull path.
-- Public benchmark success may not transfer directly to casual phone photos.
+- Public benchmark success may not transfer directly to casual phone photos; the app should constrain capture instead of accepting arbitrary uploads.
 - Image-conditioned mesh APIs may hallucinate shape detail. A text prompt can help semantic features, but it cannot replace geometric evidence.
 
 ## Next Actions
 
-1. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.
-2. Continue Phase 1A by testing the next image-to-mesh candidate that can output an actual mesh.
-3. Prefer candidates that can be tested raw on the Bunny benchmark before any UI or product logic.
-4. Keep the object-description input idea in mind for image-conditioned mesh generation, but verify outputs geometrically because text can hallucinate shape.
-5. Only return to connected-net polish after the source mesh route is credible.
+1. Promote controlled turntable visual hull as the primary non-Tripo image-to-mesh route.
+2. Test the same route on one real phone-captured object with 10 to 15 images and a clean background.
+3. Improve capture guidance assumptions: object centered, same distance, full 360-degree coverage, high contrast background, minimal shadows.
+4. Improve connected-net page layout, fold/cut styling, and assembly order after the real-capture test.
+5. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.

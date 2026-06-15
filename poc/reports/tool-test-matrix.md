@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Phase 1 has started. No tool has passed the full image-to-printable-kit proof yet. COLMAP is still under active Phase 1A evaluation because its current local result is sparse/partial and not satisfying enough as the product's image-to-3D source.
+Phase 1A now has a constrained pass: controlled turntable visual hull can convert 12 clean same-object images into a watertight mesh, a low-poly faceted shell, and a connected SVG net with glue tabs. COLMAP remains useful as a diagnostic/camera-recovery baseline, but its current local result is sparse/partial and not satisfying enough as the product's image-to-3D source.
 
 Initial local availability check:
 
@@ -37,8 +37,9 @@ Each tool or pipeline must be evaluated against the same checklist:
 | Tool | Local availability | Input tested | Mesh output | Automation path | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | COLMAP | Installed in `paperlamp-poc` | Tiny NeRF Lego, Middlebury DinoRing, Stanford Bunny rendered views | Sparse reconstruction plus failed sparse mesh attempt | CLI | Diagnostic only for now | Tiny NeRF failed to produce useful sparse geometry. Calibrated DinoRing produced two sparse models covering 47 of 48 images. Bunny rendered views improved to 43/48 registered images and 2139 sparse points with fixed intrinsics plus relaxed mapper settings. Sparse Delaunay meshing produced an unusable spike-like mesh; Poisson failed because sparse PLY lacks normals. Dense stereo failed locally because this COLMAP build requires CUDA. |
+| Controlled turntable visual hull | Implemented as `build-turntable-visual-hull.py` | Stanford Bunny rendered turntable views, including a 12-image subset | Watertight OBJ mesh | Fully scriptable | Constrained Phase 1A pass | Assumes same object, centered capture, clean/white background, and known or estimated turntable angles. The 12-image subset produced a watertight mesh, a watertight 300-face shell, and a connected SVG net. This is the current non-Tripo solution path. |
 | Meshroom / AliceVision | Missing | Not tested | Not tested | CLI/GUI mixed | Blocked until installed | Useful comparison if available. |
-| Cloud/API image-to-3D | Existing repo client stub for Tripo; not validated in Phase 1 | Not tested in current POC | Not tested | API-dependent | Not started | Only useful if it returns downloadable meshes. Text descriptions may help semantic shape, but outputs must be checked for hallucinated geometry. |
+| Cloud/API image-to-3D | Existing repo client stub for Tripo; Tripo rejected after prior user trial | Not tested further in current POC | Not tested | API-dependent | Deferred | Only useful if it returns downloadable meshes and beats the controlled visual-hull baseline. Text descriptions may help semantic shape, but outputs must be checked for hallucinated geometry. |
 
 ## Mesh Cleanup And 2D Conversion Tools
 
@@ -46,7 +47,7 @@ Each tool or pipeline must be evaluated against the same checklist:
 | --- | --- | --- | --- | --- | --- | --- |
 | Blender Python | Missing | Not tested | Not tested | Scriptable | Deferred | We will first try `trimesh` + `shapely` for slicing before adding Blender. |
 | Papercraft unfold tool | Custom first-pass exporter | Faceted Dino and Bunny shells tested through custom exporter | Raw labeled triangle SVG and connected net SVG | Custom Python | Partial pass | Exported isolated labeled triangles and a first Bunny connected net with glue tabs. Needs page layout, fold styling, and assembly validation. |
-| Custom lamp-plane script | Implemented as first visual-hull/rib prototype | Middlebury DinoRing | SVG rib sheet plus 3D rib render | Fully scriptable | Partial pass | Produced a rough visual hull, 12-rib SVG, and 20-rib orthogonal assembly render. Shape is still too noisy for a phase pass. |
+| Custom lamp-plane script | Implemented as first visual-hull/rib prototype | Middlebury DinoRing and Stanford Bunny | SVG rib sheet, 3D rib render, faceted shell, connected net | Fully scriptable | Pass under controlled capture for faceted shell path | Dino rib output was too noisy. Bunny controlled turntable visual hull produced a usable mesh-to-net route. |
 | Point-cloud preview renderer | Implemented | Stanford Bunny COLMAP sparse point cloud | PNG diagnostic render | Custom Python | Pass as diagnostic only | Confirms sparse reconstructions can be visually inspected quickly, but does not create printable geometry. |
 
 ## Tool Test Log
@@ -194,3 +195,18 @@ Each tool or pipeline must be evaluated against the same checklist:
 - Rendered Delaunay faceted variants. Visual result is a long spike-like artifact, not a recognizable Bunny.
 - Ran COLMAP Poisson meshing on the tuned sparse PLY. It failed because the sparse PLY has no normal field such as `nx`.
 - Conclusion: tuned COLMAP improves sparse camera/point recovery, but local COLMAP does not currently produce a satisfying mesh for this product. Treat it as a diagnostic/camera-recovery tool and move Phase 1A to the next image-to-mesh candidate.
+
+### 2026-06-16: Controlled Turntable Visual-Hull Pass
+
+- Added `build-turntable-visual-hull.py` for controlled same-object captures where the object is centered, the background is clean, and image angles are known or estimated.
+- Tested the full 48-view Stanford Bunny rendered capture:
+  - 48 input images;
+  - watertight OBJ mesh with 6966 vertices and 13,928 faces;
+  - 300-face shell remains watertight;
+  - connected net export with 22 islands and 129 glue tabs.
+- Tested a reduced input matching the intended app capture rule:
+  - 12 input images from two elevation rings;
+  - watertight OBJ mesh with 7468 vertices and 14,940 faces;
+  - 300-face shell remains watertight;
+  - connected net export with 21 islands and 131 glue tabs.
+- Conclusion: this is the first non-Tripo route that meets the raw technical requirement under explicit capture constraints: controlled images in, mesh out, faceted shell out, connected printable SVG net out.

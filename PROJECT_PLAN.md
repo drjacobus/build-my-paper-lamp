@@ -20,7 +20,7 @@ If this cannot be proven with raw tools and scripts, adding a polished interface
 
 ### Current Status
 
-Status as of 2026-06-15: **Started; Phase 1A still active because COLMAP is not yet satisfying enough**
+Status as of 2026-06-16: **Phase 1A constrained pass for guided turntable capture**
 
 What exists now:
 
@@ -39,6 +39,7 @@ What exists now:
 - Connected net exporter with simple glue tabs created at `poc/scripts/export-connected-nets.py`.
 - Mesh view renderer created at `poc/scripts/render-mesh-views.py`.
 - Sparse point-cloud preview renderer created at `poc/scripts/render-point-cloud.py`.
+- Controlled turntable visual-hull mesh script created at `poc/scripts/build-turntable-visual-hull.py`.
 - Same-object dataset source notes added for Tiny NeRF Lego, Middlebury DinoRing, and Stanford Bunny.
 - Middlebury DinoRing output folder added under `poc/output/middlebury-dino-ring/`.
 - Stanford Bunny output folder added under `poc/output/stanford-bunny/`.
@@ -94,24 +95,39 @@ Initial findings:
 - The calibrated Bunny sparse point cloud visually hints at ears/body silhouette, but remains far from a usable mesh.
 - COLMAP sparse-input Delaunay meshing produced a mesh, but the rendered result is a stretched spike-like artifact and not a recognizable Bunny.
 - COLMAP Poisson meshing failed on the sparse PLY because the export has no normal fields such as `nx`.
+- Tripo/TripoSR route was not pursued after user feedback that Tripo output had already been tried and was not good.
+- Local Docker is not installed, so containerized Meshroom/OpenMVS is not available on this machine.
+- Conda-forge package checks found no `openmvs`, `openmvg`, `alicevision`, or `meshroom` package for the local macOS arm64 setup.
+- Controlled turntable visual hull was tested on the 48 Bunny rendered images and produced:
+  - watertight OBJ mesh with 6966 vertices and 13,928 faces;
+  - low-poly shell variants at 300, 600, and 1200 faces;
+  - 300-face shell remains watertight;
+  - connected net export with 22 islands and 129 glue tabs.
+- A reduced 12-image turntable subset was tested to match the intended app constraint of roughly 10 to 15 clean object images from different angles:
+  - 12 input images from two elevation rings;
+  - watertight OBJ mesh with 7468 vertices and 14,940 faces;
+  - 300-face faceted shell remains watertight;
+  - connected net export with 21 islands and 131 glue tabs.
 
-Immediate blocker:
+Current conclusion:
 
-- We have a working sparse reconstruction baseline, a first rough silhouette-derived rib SVG, a rendered orthogonal rib assembly, low-poly faceted shell variants, a raw labeled triangle template, and a first connected net with glue tabs.
+- We have a working sparse reconstruction baseline, a first rough silhouette-derived rib SVG, a rendered orthogonal rib assembly, low-poly faceted shell variants, a raw labeled triangle template, and connected nets with glue tabs.
 - The faceted shell path is closer to the target paperlamp kit than the rib path.
 - Bunny shows that a cleaner, clearer animal source can preserve recognizable shape through low-poly faceting.
-- The remaining blocker is no longer "can a recognizable source become a faceted template"; it is "can user-provided images produce a source shape clean enough for that template path."
+- The 12-image guided turntable test satisfies the raw Phase 1A requirement under explicit capture constraints: same object, centered, clean/white background, known or estimated angles, and enough silhouette coverage.
+- The remaining blocker is no longer "can 10 to 15 controlled images become a mesh and printable net"; it is "can real user phone images meet those capture constraints reliably enough."
 - COLMAP can recover partial sparse Bunny geometry from rendered images, especially with fixed camera assumptions and relaxed mapper thresholds, but this is not enough by itself because the product needs a usable mesh, not just camera poses and sparse points.
 - Local COLMAP should now be treated as a diagnostic/camera-recovery baseline, not a satisfying Phase 1A image-to-mesh solution.
+- The first viable non-Tripo solution is controlled capture plus silhouette visual hull. It is not arbitrary photo reconstruction, but it gives a practical product constraint: guide the user to capture the object like a turntable scan on a clean background.
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 
 Next action:
 
-1. Promote Stanford Bunny to the controlled shape-fidelity benchmark.
-2. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
-3. Record COLMAP as useful but not satisfying enough for Phase 1A on this local setup.
-4. Continue Phase 1A by testing the next image-to-mesh option that can output an actual mesh.
-5. Return to connected-net polish only after the image-to-3D source step has a credible route.
+1. Promote controlled turntable visual hull to the primary Phase 1A solution path.
+2. Define the app capture requirement around 10 to 15 clean same-object images from different angles, preferably on a white or high-contrast background.
+3. Validate the route on a real captured object with phone images, clean background, and turntable-style coverage.
+4. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
+5. Only research non-Tripo image-to-3D APIs or models if they return downloadable meshes and can beat the controlled visual-hull baseline.
 
 ### Goal
 
@@ -140,7 +156,7 @@ Use 3 to 5 controlled test objects:
 3. A difficult object, such as something glossy, thin, dark, or low-texture.
 4. One object that matches the final paper lamp product vision.
 
-Each object should have a dedicated input folder containing the source images. Start with 20 to 60 photos per object when testing photogrammetry-style tools.
+Each object should have a dedicated input folder containing the source images. Start with 10 to 15 clean, guided turntable-style images when testing the current visual-hull path. Use 20 to 60 photos only when testing photogrammetry-style tools such as COLMAP or Meshroom.
 
 ### Required Outputs
 
