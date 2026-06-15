@@ -53,6 +53,22 @@ Each tool or pipeline must be evaluated against the same checklist:
 
 ## Tool Test Log
 
+### 2026-06-16: Next Public Test Dataset Selection
+
+- Ranked the next public datasets for controlled visual-hull testing:
+  - THU-MVS Cat/Dog: selected first because it is narrow, turntable-like, physical, and animal-shaped.
+  - Washington RGB-D Object Dataset: selected second for broader household-object generalization.
+  - BigBIRD: selected third as a later turntable/mask stress test.
+- Deferred CO3D, Objectron, YCB/T-LESS BOP, DTU, and HILO for now because they are broader, larger, more cluttered, less isolated, or less directly aligned with the immediate paperlamp proof.
+- Next test target: download THU-MVS Cat or Dog, create a 10 to 15 view manifest, run visual hull, then generate a 300-face shell and connected net.
+- Started the THU-MVS Dog test:
+  - downloaded `Dog_RGB.zip`;
+  - created `poc/input/thu-mvs-dog/turntable-12-view-manifest.csv`;
+  - added background-color masking for blue-background images;
+  - 12-view visual hull produced a watertight mesh with 16,462 vertices and 32,936 faces;
+  - 300-face and 600-face shells both stayed watertight;
+  - connected 300-face net produced 25 islands and 144 glue tabs.
+
 ### 2026-06-15: Phase 1 Setup
 
 - Created the POC workspace.

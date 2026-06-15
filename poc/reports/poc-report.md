@@ -637,11 +637,12 @@ Interpretation:
 
 ### Experiment 12: User-Captured Recognizable Organic Object
 
-Status: Not started
+Status: Public physical-object benchmark started
 
 Input object:
 
-- TBD
+- THU-MVS Dog RGB dataset.
+- 12 selected views from 2 height rings and 6 rotation angles.
 
 Planned output:
 
@@ -651,7 +652,22 @@ Planned output:
 
 Result:
 
-- TBD
+- Downloaded `Dog_RGB.zip` from THU-MVS.
+- Created `poc/input/thu-mvs-dog/turntable-12-view-manifest.csv`.
+- Added background-color mask mode to handle the blue capture background.
+- Visual hull result:
+  - 67,302 occupied voxels out of 884,736 after cleanup;
+  - OBJ mesh with 16,462 vertices and 32,936 faces;
+  - watertight mesh.
+- Faceted shell result:
+  - 300 target faces -> 300 faces, 152 vertices, watertight;
+  - 600 target faces -> 600 faces, 302 vertices, watertight.
+- Connected net result:
+  - 300 faces;
+  - 25 islands;
+  - 144 glue tabs;
+  - page height: 855 mm.
+- Visual read: recognizable as a long animal/figurine volume, but blockier and less characterful than the Bunny. Good proof that the pipeline transfers to a real public physical-object image set.
 
 ### Experiment 13: Printable Plane Strategy
 
@@ -698,8 +714,11 @@ Result:
 ## Next Actions
 
 1. Promote controlled turntable visual hull as the primary non-Tripo image-to-mesh route.
-2. Test the same route on one real phone-captured object with 10 to 15 images and a clean background.
-3. Improve capture guidance assumptions: object centered, same distance, full 360-degree coverage, high contrast background, minimal shadows.
-4. Prototype AI-assisted masks or capture quality checks only after the real-capture baseline is measured.
-5. Improve connected-net page layout, fold/cut styling, and assembly order after the real-capture test.
-6. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.
+2. Test THU-MVS Cat/Dog next as the best public physical-object benchmark: turntable-like capture, recognizable animal figurines, and enough views to subset to 10 to 15 inputs.
+3. Use Washington RGB-D as the next generalization benchmark after THU-MVS.
+4. Keep BigBIRD as a later mask/turntable stress test.
+5. Test the same route on one real phone-captured object with 10 to 15 images and a clean background.
+6. Improve capture guidance assumptions: object centered, same distance, full 360-degree coverage, high contrast background, minimal shadows.
+7. Prototype AI-assisted masks or capture quality checks only after the real-capture baseline is measured.
+8. Improve connected-net page layout, fold/cut styling, and assembly order after the real-capture test.
+9. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.

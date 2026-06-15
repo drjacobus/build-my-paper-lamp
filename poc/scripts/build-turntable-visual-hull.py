@@ -116,10 +116,28 @@ def discover_views(
     return views
 
 
-def make_mask(image_path: Path, threshold: int, close_radius: int) -> np.ndarray:
+def estimate_background_color(image: np.ndarray, sample_size: int = 32) -> np.ndarray:
+    samples = np.concatenate(
+        [
+            image[:sample_size, :sample_size].reshape(-1, 3),
+            image[:sample_size, -sample_size:].reshape(-1, 3),
+            image[-sample_size:, :sample_size].reshape(-1, 3),
+            image[-sample_size:, -sample_size:].reshape(-1, 3),
+        ],
+        axis=0,
+    )
+    return np.median(samples, axis=0)
+
+
+def make_mask(image_path: Path, threshold: int, close_radius: int, mask_mode: str) -> np.ndarray:
     image = np.asarray(Image.open(image_path).convert("RGB"), dtype=np.int16)
-    distance_from_white = 255 - image.min(axis=2)
-    mask = distance_from_white > threshold
+    if mask_mode == "background":
+        background = estimate_background_color(image)
+        distance = np.linalg.norm(image.astype(np.float32) - background.astype(np.float32), axis=2)
+        mask = distance > threshold
+    else:
+        distance_from_white = 255 - image.min(axis=2)
+        mask = distance_from_white > threshold
     if close_radius > 0:
         footprint = morphology.disk(close_radius)
         mask = morphology.closing(mask, footprint)
@@ -198,6 +216,7 @@ def main() -> None:
     parser.add_argument("--grid-bound", type=float, default=0.62)
     parser.add_argument("--projection-bound", type=float, default=0.62)
     parser.add_argument("--mask-threshold", type=int, default=18)
+    parser.add_argument("--mask-mode", choices=("white", "background"), default="white")
     parser.add_argument("--mask-close-radius", type=int, default=2)
     parser.add_argument("--min-consensus", type=float, default=0.9)
     parser.add_argument("--no-clean", action="store_true")
@@ -212,7 +231,7 @@ def main() -> None:
     valid_views = np.zeros(len(points), dtype=np.uint16)
 
     for view in views:
-        mask = make_mask(view.path, args.mask_threshold, args.mask_close_radius)
+        mask = make_mask(view.path, args.mask_threshold, args.mask_close_radius, args.mask_mode)
         u, v, inside = project_orthographic(points, view, mask.shape, args.projection_bound)
         valid_views[inside] += 1
         visible = np.zeros(len(points), dtype=bool)
@@ -247,6 +266,7 @@ def main() -> None:
         grid_bound=args.grid_bound,
         projection_bound=args.projection_bound,
         mask_threshold=args.mask_threshold,
+        mask_mode=args.mask_mode,
         min_consensus=args.min_consensus,
         views=len(views),
     )

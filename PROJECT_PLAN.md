@@ -109,6 +109,12 @@ Initial findings:
   - 300-face faceted shell remains watertight;
   - connected net export with 21 islands and 131 glue tabs.
 - Manifest-based turntable input was added so future app-style captures can provide arbitrary image filenames plus approximate `azimuth` and `elevation` values.
+- THU-MVS Dog was started as the next public physical-object benchmark:
+  - 12 selected RGB images from 2 height rings;
+  - background-color masking added for non-white backgrounds;
+  - watertight visual-hull mesh with 16,462 vertices and 32,936 faces;
+  - 300-face and 600-face shells both watertight;
+  - connected 300-face SVG net with 25 islands and 144 glue tabs.
 
 Current conclusion:
 
@@ -127,10 +133,14 @@ Next action:
 
 1. Promote controlled turntable visual hull to the primary Phase 1A solution path.
 2. Define the app capture requirement around 10 to 15 clean same-object images from different angles, preferably on a white or high-contrast background.
-3. Validate the route on a real captured object with phone images, clean background, and turntable-style coverage.
-4. Add AI assistance only where it improves the geometry-first pipeline: better masks, bad-frame rejection, angle estimation, and capture guidance.
-5. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
-6. Only research non-Tripo image-to-3D APIs or models if they return downloadable meshes and can beat the controlled visual-hull baseline.
+3. Test the next public physical-object benchmark in this order:
+   - THU-MVS Cat/Dog first, because it is the closest match: turntable-like physical figurines with many views and recognizable animal shapes.
+   - Washington RGB-D Object Dataset second, because it offers many centered household objects and turntable videos for generalization.
+   - BigBIRD third, because it has turntable positions and masks but less paperlamp-like grocery/product objects.
+4. Validate the route on a real captured object with phone images, clean background, and turntable-style coverage.
+5. Add AI assistance only where it improves the geometry-first pipeline: better masks, bad-frame rejection, angle estimation, and capture guidance.
+6. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
+7. Only research non-Tripo image-to-3D APIs or models if they return downloadable meshes and can beat the controlled visual-hull baseline.
 
 ### Goal
 

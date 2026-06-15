@@ -1,0 +1,13 @@
+image,azimuth,elevation
+raw/Dog_RGB/im_0001.JPG,0,10
+raw/Dog_RGB/im_0007.JPG,60,10
+raw/Dog_RGB/im_0013.JPG,120,10
+raw/Dog_RGB/im_0019.JPG,180,10
+raw/Dog_RGB/im_0025.JPG,240,10
+raw/Dog_RGB/im_0031.JPG,300,10
+raw/Dog_RGB/im_0037.JPG,0,-10
+raw/Dog_RGB/im_0043.JPG,60,-10
+raw/Dog_RGB/im_0049.JPG,120,-10
+raw/Dog_RGB/im_0055.JPG,180,-10
+raw/Dog_RGB/im_0061.JPG,240,-10
+raw/Dog_RGB/im_0067.JPG,300,-10
