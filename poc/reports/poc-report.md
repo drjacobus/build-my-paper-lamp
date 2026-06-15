@@ -17,6 +17,7 @@ Current best technical result:
 - A raw 300-face labeled triangle SVG template exists, but it is not yet a proper connected papercraft net.
 - Stanford Bunny was added as a better controlled animal test object.
 - Bunny produces a much more recognizable low-poly animal shell than Dino.
+- A first connected Bunny net with glue tabs now exists.
 
 ## Setup Findings
 
@@ -54,6 +55,7 @@ Reason:
 - A rough printable-style 2D rib SVG exists, but it has not been cleaned, slotted, printed, or paged.
 - A rendered rib assembly exists, but it is not yet recognizable enough to pass Phase 1.
 - A raw faceted triangle template exists, but it lacks tabs, connected unfolding, page layout, and assembly validation.
+- The connected Bunny net has tabs and connected islands, but still lacks page layout, fold-line styling, and assembly validation.
 - A controlled Bunny benchmark produces recognizable faceted shell output, but it bypasses user-photo reconstruction.
 
 ## Experiment Results
@@ -334,7 +336,44 @@ Interpretation:
 - This validates the faceted-shell template direction as the likely paperlamp path.
 - It does not prove the final user-photo workflow because the source mesh is already known.
 
-### Experiment 9: User-Captured Recognizable Organic Object
+### Experiment 9: Connected Bunny Net Export
+
+Status: Partial pass
+
+Input:
+
+- `poc/output/stanford-bunny/cleaned-mesh/stanford-bunny-faceted-shell-300.obj`
+
+Command:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/export-connected-nets.py \
+  --input-mesh poc/output/stanford-bunny/cleaned-mesh/stanford-bunny-faceted-shell-300.obj \
+  --output-svg poc/output/stanford-bunny/printable-planes/stanford-bunny-connected-net-300.svg \
+  --target-max-mm 250 \
+  --max-faces-per-island 24
+```
+
+Generated output:
+
+- `poc/output/stanford-bunny/printable-planes/stanford-bunny-connected-net-300.svg`
+
+Measured result:
+
+- 299 mesh faces.
+- 22 connected islands.
+- Island size range: 1 to 24 faces.
+- 116 glue tabs.
+- SVG page height: about 720 mm.
+- SVG file size: about 124 KB.
+
+Interpretation:
+
+- This is the first connected-net artifact and is closer to a real DIY paperlamp kit than the isolated triangle export.
+- It still does not pass Phase 1 because page layout, fold/cut line styling, assembly order, and physical/rendered reassembly validation are missing.
+- The result confirms that connected-net generation is a viable next workstream for the Bunny benchmark.
+
+### Experiment 10: User-Captured Recognizable Organic Object
 
 Status: Not started
 
@@ -352,7 +391,7 @@ Result:
 
 - TBD
 
-### Experiment 10: Printable Plane Strategy
+### Experiment 11: Printable Plane Strategy
 
 Status: Not started
 
@@ -367,7 +406,7 @@ Result:
 
 - TBD
 
-### Experiment 11: Physical Or Rendered Validation
+### Experiment 12: Physical Or Rendered Validation
 
 Status: Not started
 
@@ -394,8 +433,8 @@ Result:
 
 ## Next Actions
 
-1. Use Stanford Bunny as the controlled downstream benchmark for connected nets and tabs.
-2. Convert isolated triangle templates into connected nets with tabs.
-3. Add page layout and assembly metadata to the SVG output.
+1. Improve the Bunny connected net: fewer islands, cleaner tabs, fold/cut styling, and page layout.
+2. Add assembly metadata and ordering to the SVG output.
+3. Validate that the connected net can reconstruct the faceted shell.
 4. Separately test how to get Bunny-quality source geometry from real input photos or image-conditioned reconstruction.
 5. Capture our own object photos after the controlled benchmark can produce a usable paperlamp-style template.

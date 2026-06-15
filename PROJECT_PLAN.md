@@ -36,6 +36,7 @@ What exists now:
 - Orthogonal rib assembly render script created at `poc/scripts/render-rib-assembly.py`.
 - Low-poly faceted shell render script created at `poc/scripts/render-faceted-shell.py`.
 - Raw faceted triangle template exporter created at `poc/scripts/export-faceted-template.py`.
+- Connected net exporter with simple glue tabs created at `poc/scripts/export-connected-nets.py`.
 - Mesh view renderer created at `poc/scripts/render-mesh-views.py`.
 - Same-object dataset source notes added for Tiny NeRF Lego, Middlebury DinoRing, and Stanford Bunny.
 - Middlebury DinoRing output folder added under `poc/output/middlebury-dino-ring/`.
@@ -83,10 +84,12 @@ Initial findings:
 - Bunny low-poly faceted shell variants were generated at 150, 300, 600, and 1200 target faces.
 - The Bunny shell is substantially more recognizable than the Dino shell, especially from ear/body silhouette.
 - A raw 299-face Bunny triangle SVG template was generated at `poc/output/stanford-bunny/printable-planes/stanford-bunny-faceted-shell-300-template.svg`.
+- A connected Bunny net SVG was generated at `poc/output/stanford-bunny/printable-planes/stanford-bunny-connected-net-300.svg`.
+- The first connected net result contains 22 connected islands, 299 faces, and 116 glue tabs.
 
 Immediate blocker:
 
-- We have a working sparse reconstruction baseline, a first rough silhouette-derived rib SVG, a rendered orthogonal rib assembly, low-poly faceted shell variants, and a raw labeled triangle template.
+- We have a working sparse reconstruction baseline, a first rough silhouette-derived rib SVG, a rendered orthogonal rib assembly, low-poly faceted shell variants, a raw labeled triangle template, and a first connected net with glue tabs.
 - The faceted shell path is closer to the target paperlamp kit than the rib path.
 - Bunny shows that a cleaner, clearer animal source can preserve recognizable shape through low-poly faceting.
 - The remaining blocker is no longer "can a recognizable source become a faceted template"; it is "can user-provided photos produce a source shape clean enough for that template path."
@@ -96,7 +99,7 @@ Next action:
 
 1. Promote Stanford Bunny to the controlled shape-fidelity benchmark.
 2. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
-3. Improve the template from isolated labeled triangles into connected nets with tabs, page layout, and assembly metadata.
+3. Improve the connected net: fewer islands, cleaner tabs, fold/cut styling, page layout, and assembly metadata.
 4. Separately test how to obtain a Bunny-quality source shape from input photos or image-conditioned reconstruction.
 5. Later, capture our own 30 to 60 photo set once the benchmark pipeline has a working raw path.
 

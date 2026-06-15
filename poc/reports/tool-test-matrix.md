@@ -45,7 +45,7 @@ Each tool or pipeline must be evaluated against the same checklist:
 | Tool | Local availability | Mesh tested | 2D output | Automation path | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | Blender Python | Missing | Not tested | Not tested | Scriptable | Deferred | We will first try `trimesh` + `shapely` for slicing before adding Blender. |
-| Papercraft unfold tool | Unknown | Faceted Dino and Bunny shells tested through custom exporter | Raw labeled triangle SVG | Unknown/custom | Partial pass | Exported isolated labeled triangles from 300-face shells. Bunny is much more recognizable. This is not yet a connected net with tabs. |
+| Papercraft unfold tool | Custom first-pass exporter | Faceted Dino and Bunny shells tested through custom exporter | Raw labeled triangle SVG and connected net SVG | Custom Python | Partial pass | Exported isolated labeled triangles and a first Bunny connected net with glue tabs. Needs page layout, fold styling, and assembly validation. |
 | Custom lamp-plane script | Implemented as first visual-hull/rib prototype | Middlebury DinoRing | SVG rib sheet plus 3D rib render | Fully scriptable | Partial pass | Produced a rough visual hull, 12-rib SVG, and 20-rib orthogonal assembly render. Shape is still too noisy for a phase pass. |
 
 ## Tool Test Log
@@ -138,3 +138,21 @@ Each tool or pipeline must be evaluated against the same checklist:
   - 1200 target faces -> 1200 faces, 601 vertices, not watertight.
 - Generated `stanford-bunny-faceted-shell-300-template.svg` from the 300-face shell.
 - Conclusion: Bunny is a much better controlled shape-fidelity benchmark than Dino. The faceted-shell path can preserve a recognizable animal when the source shape is clean enough.
+
+### 2026-06-15: Connected Net Export Test
+
+- Added `export-connected-nets.py` to unfold a triangular mesh into connected net islands.
+- The first approach is greedy and conservative:
+  - grow connected face islands through mesh adjacency;
+  - reject overlaps;
+  - limit island size;
+  - add one glue tab per shared cut edge;
+  - label matching cut edges.
+- Tested on the 300-face Stanford Bunny shell.
+- Result:
+  - 299 mesh faces;
+  - 22 connected islands;
+  - island size range: 1 to 24 faces;
+  - 116 glue tabs;
+  - SVG page height: about 720 mm.
+- Conclusion: this is the first artifact that looks structurally like a paper kit rather than a pile of unrelated triangles. It still needs better unfolding, page layout, fold/cut styling, and assembly validation.

@@ -176,3 +176,15 @@ Export the raw Bunny template with:
   --output-svg poc/output/stanford-bunny/printable-planes/stanford-bunny-faceted-shell-300-template.svg \
   --target-max-mm 250
 ```
+
+Export a first connected Bunny net with glue tabs:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/export-connected-nets.py \
+  --input-mesh poc/output/stanford-bunny/cleaned-mesh/stanford-bunny-faceted-shell-300.obj \
+  --output-svg poc/output/stanford-bunny/printable-planes/stanford-bunny-connected-net-300.svg \
+  --target-max-mm 250 \
+  --max-faces-per-island 24
+```
+
+This produces connected triangle islands with matching edge labels and one simple tab per shared cut edge. It is still a raw proof artifact, not final printable product art.
