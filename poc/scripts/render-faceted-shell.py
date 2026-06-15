@@ -73,6 +73,7 @@ def main() -> None:
     parser.add_argument("--input-mesh", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--face-counts", type=int, nargs="+", default=[300, 800, 1600])
+    parser.add_argument("--name-prefix", default=None)
     args = parser.parse_args()
 
     source = trimesh.load(args.input_mesh, force="mesh")
@@ -80,19 +81,20 @@ def main() -> None:
         raise RuntimeError(f"Expected a single mesh, got {type(source)!r}")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    name_prefix = args.name_prefix or args.input_mesh.stem
     variants: list[tuple[int, trimesh.Trimesh]] = []
 
     for face_count in args.face_counts:
         mesh = simplify_mesh(source, face_count)
         variants.append((face_count, mesh))
-        output_path = args.output_dir / f"dino-faceted-shell-{face_count}.obj"
+        output_path = args.output_dir / f"{name_prefix}-faceted-shell-{face_count}.obj"
         mesh.export(output_path)
         print(
             f"{face_count} target faces -> {len(mesh.faces)} faces, "
             f"{len(mesh.vertices)} vertices, watertight={mesh.is_watertight}: {output_path}"
         )
 
-    render_path = args.output_dir / "dino-faceted-shell-variants.png"
+    render_path = args.output_dir / f"{name_prefix}-faceted-shell-variants.png"
     render_mesh_grid(render_path, variants)
     print(f"wrote {render_path}")
 

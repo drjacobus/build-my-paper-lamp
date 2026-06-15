@@ -1,0 +1,9 @@
+object_description: "ceramic rabbit figurine with two long upright ears, compact seated body, rounded back, small head, and visible feet"
+target_style: "faceted DIY paper lamp kit"
+must_preserve:
+  - long upright ears
+  - compact rabbit body
+  - head
+  - feet
+  - seated posture
+phase_1_role: "controlled animal benchmark for shape fidelity and faceted template generation"

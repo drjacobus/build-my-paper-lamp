@@ -15,6 +15,8 @@ Current best technical result:
 - A 20-rib orthogonal assembly render exists, but recognizability is still weak.
 - A low-poly faceted shell path now exists and is closer to the target paperlamp-kit direction.
 - A raw 300-face labeled triangle SVG template exists, but it is not yet a proper connected papercraft net.
+- Stanford Bunny was added as a better controlled animal test object.
+- Bunny produces a much more recognizable low-poly animal shell than Dino.
 
 ## Setup Findings
 
@@ -52,6 +54,7 @@ Reason:
 - A rough printable-style 2D rib SVG exists, but it has not been cleaned, slotted, printed, or paged.
 - A rendered rib assembly exists, but it is not yet recognizable enough to pass Phase 1.
 - A raw faceted triangle template exists, but it lacks tabs, connected unfolding, page layout, and assembly validation.
+- A controlled Bunny benchmark produces recognizable faceted shell output, but it bypasses user-photo reconstruction.
 
 ## Experiment Results
 
@@ -267,7 +270,71 @@ Interpretation:
 - This proves the low-poly shell can be converted into printable 2D facet geometry.
 - It does not yet prove a usable kit because the triangles are isolated rather than arranged as connected nets, and there are no glue tabs or page boundaries.
 
-### Experiment 8: Recognizable Organic Object
+### Experiment 8: Stanford Bunny Controlled Object
+
+Status: Partial pass
+
+Reason for adding:
+
+- DinoRing is useful for calibrated visual-hull testing, but the curled dinosaur shape is visually ambiguous and the resulting shell is blobby.
+- Stanford Bunny has a clearer animal silhouette, especially the ears and compact body.
+- This object tests whether the downstream faceted-template pipeline can preserve a recognizable animal when the source shape is clean.
+
+Source:
+
+- `poc/input/stanford-bunny/raw/bunny/reconstruction/bun_zipper_res3.ply`
+
+Object metadata:
+
+- `poc/input/stanford-bunny/object-metadata.yml`
+
+Commands:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-mesh-views.py \
+  --input-mesh poc/input/stanford-bunny/raw/bunny/reconstruction/bun_zipper_res3.ply \
+  --output-dir poc/input/stanford-bunny/images \
+  --views 24 \
+  --elevations -8 14
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-faceted-shell.py \
+  --input-mesh poc/input/stanford-bunny/raw/bunny/reconstruction/bun_zipper_res3.ply \
+  --output-dir poc/output/stanford-bunny/cleaned-mesh \
+  --face-counts 150 300 600 1200 \
+  --name-prefix stanford-bunny
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/export-faceted-template.py \
+  --input-mesh poc/output/stanford-bunny/cleaned-mesh/stanford-bunny-faceted-shell-300.obj \
+  --output-svg poc/output/stanford-bunny/printable-planes/stanford-bunny-faceted-shell-300-template.svg \
+  --target-max-mm 250
+```
+
+Generated outputs:
+
+- 48 rendered same-object input images under `poc/input/stanford-bunny/images/`.
+- `poc/output/stanford-bunny/cleaned-mesh/stanford-bunny-faceted-shell-variants.png`
+- `poc/output/stanford-bunny/printable-planes/stanford-bunny-faceted-shell-300-template.svg`
+
+Measured result:
+
+- 150 target faces -> 150 faces, 78 vertices, not watertight.
+- 300 target faces -> 299 faces, 153 vertices, not watertight.
+- 600 target faces -> 600 faces, 306 vertices, not watertight.
+- 1200 target faces -> 1200 faces, 601 vertices, not watertight.
+- Raw 300-face template exports 299 triangle pieces.
+
+Interpretation:
+
+- This is the best shape-fidelity result so far.
+- The Bunny remains recognizable after low-poly faceting, especially by its ears/body silhouette.
+- This validates the faceted-shell template direction as the likely paperlamp path.
+- It does not prove the final user-photo workflow because the source mesh is already known.
+
+### Experiment 9: User-Captured Recognizable Organic Object
 
 Status: Not started
 
@@ -285,7 +352,7 @@ Result:
 
 - TBD
 
-### Experiment 9: Printable Plane Strategy
+### Experiment 10: Printable Plane Strategy
 
 Status: Not started
 
@@ -300,7 +367,7 @@ Result:
 
 - TBD
 
-### Experiment 10: Physical Or Rendered Validation
+### Experiment 11: Physical Or Rendered Validation
 
 Status: Not started
 
@@ -327,8 +394,8 @@ Result:
 
 ## Next Actions
 
-1. Improve mask quality and contour filtering until the Dino faceted shell is recognizably related to the source object.
+1. Use Stanford Bunny as the controlled downstream benchmark for connected nets and tabs.
 2. Convert isolated triangle templates into connected nets with tabs.
 3. Add page layout and assembly metadata to the SVG output.
-4. Add side-by-side rendered validation against one or more source silhouettes.
-5. Capture our own object photos only after the benchmark path produces a recognizable rendered assembly.
+4. Separately test how to get Bunny-quality source geometry from real input photos or image-conditioned reconstruction.
+5. Capture our own object photos after the controlled benchmark can produce a usable paperlamp-style template.

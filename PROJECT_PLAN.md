@@ -36,8 +36,10 @@ What exists now:
 - Orthogonal rib assembly render script created at `poc/scripts/render-rib-assembly.py`.
 - Low-poly faceted shell render script created at `poc/scripts/render-faceted-shell.py`.
 - Raw faceted triangle template exporter created at `poc/scripts/export-faceted-template.py`.
-- Same-object dataset source notes added for Tiny NeRF Lego and Middlebury DinoRing.
+- Mesh view renderer created at `poc/scripts/render-mesh-views.py`.
+- Same-object dataset source notes added for Tiny NeRF Lego, Middlebury DinoRing, and Stanford Bunny.
 - Middlebury DinoRing output folder added under `poc/output/middlebury-dino-ring/`.
+- Stanford Bunny output folder added under `poc/output/stanford-bunny/`.
 
 Initial findings:
 
@@ -75,19 +77,27 @@ Initial findings:
 - Low-poly faceted shell variants were generated at 300, 800, and 1600 target faces.
 - The faceted shell reads closer to the paperlamp-kit goal than the rib lattice, but the underlying visual hull remains too noisy.
 - A raw 300-face triangle SVG template with face and edge labels was generated at `poc/output/middlebury-dino-ring/printable-planes/dino-faceted-shell-300-template.svg`.
+- Stanford Bunny was added as the next controlled animal benchmark.
+- A metadata sidecar was added for the Bunny object, describing the expected rabbit features to preserve.
+- 48 synthetic same-object Bunny views were rendered from the scan-derived mesh.
+- Bunny low-poly faceted shell variants were generated at 150, 300, 600, and 1200 target faces.
+- The Bunny shell is substantially more recognizable than the Dino shell, especially from ear/body silhouette.
+- A raw 299-face Bunny triangle SVG template was generated at `poc/output/stanford-bunny/printable-planes/stanford-bunny-faceted-shell-300-template.svg`.
 
 Immediate blocker:
 
 - We have a working sparse reconstruction baseline, a first rough silhouette-derived rib SVG, a rendered orthogonal rib assembly, low-poly faceted shell variants, and a raw labeled triangle template.
-- The faceted shell path is closer to the target paperlamp kit than the rib path, but the source hull is still not recognizable enough to pass the phase gate.
+- The faceted shell path is closer to the target paperlamp kit than the rib path.
+- Bunny shows that a cleaner, clearer animal source can preserve recognizable shape through low-poly faceting.
+- The remaining blocker is no longer "can a recognizable source become a faceted template"; it is "can user-provided photos produce a source shape clean enough for that template path."
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 
 Next action:
 
-1. Improve shape fidelity before adding product features: tighter masks, better contour filtering, and higher-resolution visual hull tests.
+1. Promote Stanford Bunny to the controlled shape-fidelity benchmark.
 2. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
 3. Improve the template from isolated labeled triangles into connected nets with tabs, page layout, and assembly metadata.
-4. Add a side-by-side validation render against source silhouettes.
+4. Separately test how to obtain a Bunny-quality source shape from input photos or image-conditioned reconstruction.
 5. Later, capture our own 30 to 60 photo set once the benchmark pipeline has a working raw path.
 
 ### Goal

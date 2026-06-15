@@ -45,7 +45,7 @@ Each tool or pipeline must be evaluated against the same checklist:
 | Tool | Local availability | Mesh tested | 2D output | Automation path | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | Blender Python | Missing | Not tested | Not tested | Scriptable | Deferred | We will first try `trimesh` + `shapely` for slicing before adding Blender. |
-| Papercraft unfold tool | Unknown | Faceted Dino shell tested through custom exporter | Raw labeled triangle SVG | Unknown/custom | Partial pass | Exported isolated labeled triangles from a 300-face shell. This is not yet a connected net with tabs. |
+| Papercraft unfold tool | Unknown | Faceted Dino and Bunny shells tested through custom exporter | Raw labeled triangle SVG | Unknown/custom | Partial pass | Exported isolated labeled triangles from 300-face shells. Bunny is much more recognizable. This is not yet a connected net with tabs. |
 | Custom lamp-plane script | Implemented as first visual-hull/rib prototype | Middlebury DinoRing | SVG rib sheet plus 3D rib render | Fully scriptable | Partial pass | Produced a rough visual hull, 12-rib SVG, and 20-rib orthogonal assembly render. Shape is still too noisy for a phase pass. |
 
 ## Tool Test Log
@@ -118,3 +118,23 @@ Each tool or pipeline must be evaluated against the same checklist:
 - Added `export-faceted-template.py` to export a raw labeled triangle SVG from a low-poly shell.
 - Generated `dino-faceted-shell-300-template.svg` from the 300-face shell.
 - Conclusion: faceted shell output is visually closer to the intended paperlamp-kit direction than rib lattices, but the current visual hull still needs better shape fidelity and the template needs connected nets and tabs.
+
+### 2026-06-15: Better Controlled Object Search
+
+- Rejected CO3D as the immediate next object source because even the small subset is too large for this short sprint.
+- Added Stanford Bunny as a better controlled animal benchmark from the Stanford 3D Scanning Repository.
+- Downloaded the small Bunny archive and selected `bun_zipper_res3.ply` as the primary mesh.
+- Added an object metadata sidecar describing preserved features:
+  - long upright ears;
+  - compact rabbit body;
+  - head;
+  - feet;
+  - seated posture.
+- Rendered 48 synthetic same-object Bunny views from the mesh.
+- Generated Bunny faceted shell variants:
+  - 150 target faces -> 150 faces, 78 vertices, not watertight;
+  - 300 target faces -> 299 faces, 153 vertices, not watertight;
+  - 600 target faces -> 600 faces, 306 vertices, not watertight;
+  - 1200 target faces -> 1200 faces, 601 vertices, not watertight.
+- Generated `stanford-bunny-faceted-shell-300-template.svg` from the 300-face shell.
+- Conclusion: Bunny is a much better controlled shape-fidelity benchmark than Dino. The faceted-shell path can preserve a recognizable animal when the source shape is clean enough.

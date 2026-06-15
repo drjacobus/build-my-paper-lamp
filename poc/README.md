@@ -19,6 +19,7 @@ poc/
     recognizable-organic-object/images/
     synthetic-lego-nerf/SOURCE.md
     middlebury-dino-ring/SOURCE.md
+    stanford-bunny/SOURCE.md
     final-lamp-candidate/images/
   output/
     simple-matte-object/
@@ -146,3 +147,32 @@ Export a raw labeled triangle template from the 300-face shell with:
 ```
 
 This template is not yet a friendly papercraft net. It is a raw proof artifact: individual triangular facets with face IDs and matching edge IDs.
+
+Render controlled Stanford Bunny source views with:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-mesh-views.py \
+  --input-mesh poc/input/stanford-bunny/raw/bunny/reconstruction/bun_zipper_res3.ply \
+  --output-dir poc/input/stanford-bunny/images \
+  --views 24 \
+  --elevations -8 14
+```
+
+Generate Stanford Bunny low-poly shell variants with:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-faceted-shell.py \
+  --input-mesh poc/input/stanford-bunny/raw/bunny/reconstruction/bun_zipper_res3.ply \
+  --output-dir poc/output/stanford-bunny/cleaned-mesh \
+  --face-counts 150 300 600 1200 \
+  --name-prefix stanford-bunny
+```
+
+Export the raw Bunny template with:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/export-faceted-template.py \
+  --input-mesh poc/output/stanford-bunny/cleaned-mesh/stanford-bunny-faceted-shell-300.obj \
+  --output-svg poc/output/stanford-bunny/printable-planes/stanford-bunny-faceted-shell-300-template.svg \
+  --target-max-mm 250
+```
