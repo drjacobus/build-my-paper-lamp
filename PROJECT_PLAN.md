@@ -6,6 +6,8 @@ Build a system that turns several input photos of an object into printable 2D pa
 
 The project must prove the technical pipeline before investing in UI, branding, automation, hosting, or marketing.
 
+The intended product direction is a DIY paper lamp kit: a recognizable faceted paper object assembled from pre-cut or printable 2D parts, similar in category and quality bar to commercial animal paperlamp kits. The project should not copy any specific existing design.
+
 ## Guiding Principle
 
 The first milestone is not an app. The first milestone is proof that the core transformation works:
@@ -32,6 +34,8 @@ What exists now:
 - COLMAP headless sparse reconstruction wrapper created at `poc/scripts/run-colmap-sparse.sh`.
 - Silhouette visual-hull and rib SVG script created at `poc/scripts/build-visual-hull.py`.
 - Orthogonal rib assembly render script created at `poc/scripts/render-rib-assembly.py`.
+- Low-poly faceted shell render script created at `poc/scripts/render-faceted-shell.py`.
+- Raw faceted triangle template exporter created at `poc/scripts/export-faceted-template.py`.
 - Same-object dataset source notes added for Tiny NeRF Lego and Middlebury DinoRing.
 - Middlebury DinoRing output folder added under `poc/output/middlebury-dino-ring/`.
 
@@ -67,19 +71,23 @@ Initial findings:
   - 10 ribs along the y-axis;
   - render output at `poc/output/middlebury-dino-ring/renders/dino-rib-assembly-views.png`.
 - The rendered rib assembly forms a 3D volume, but it is still too noisy and weakly recognizable compared with the source dinosaur.
+- Installed `fast-simplification` to support low-poly shell decimation through `trimesh`.
+- Low-poly faceted shell variants were generated at 300, 800, and 1600 target faces.
+- The faceted shell reads closer to the paperlamp-kit goal than the rib lattice, but the underlying visual hull remains too noisy.
+- A raw 300-face triangle SVG template with face and edge labels was generated at `poc/output/middlebury-dino-ring/printable-planes/dino-faceted-shell-300-template.svg`.
 
 Immediate blocker:
 
-- We have a working sparse reconstruction baseline, a first rough silhouette-derived rib SVG, and a rendered orthogonal rib assembly.
-- The visual-hull mesh is rough and not watertight yet, and the rendered rib assembly is not recognizable enough to pass the phase gate.
+- We have a working sparse reconstruction baseline, a first rough silhouette-derived rib SVG, a rendered orthogonal rib assembly, low-poly faceted shell variants, and a raw labeled triangle template.
+- The faceted shell path is closer to the target paperlamp kit than the rib path, but the source hull is still not recognizable enough to pass the phase gate.
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 
 Next action:
 
 1. Improve shape fidelity before adding product features: tighter masks, better contour filtering, and higher-resolution visual hull tests.
-2. Improve the generated rib SVG: reduce noisy contours, add slots, normalize scale, and split across printable pages.
-3. Add a side-by-side validation render against source silhouettes.
-4. Repeat the pipeline at a higher voxel resolution if the cleaned 64^3 result becomes recognizable.
+2. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
+3. Improve the template from isolated labeled triangles into connected nets with tabs, page layout, and assembly metadata.
+4. Add a side-by-side validation render against source silhouettes.
 5. Later, capture our own 30 to 60 photo set once the benchmark pipeline has a working raw path.
 
 ### Goal

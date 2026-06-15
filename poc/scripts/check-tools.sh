@@ -41,7 +41,7 @@ else
       && echo "found   paperlamp-poc:colmap" \
       || echo "missing paperlamp-poc:colmap"
 
-    "$conda_bin" run -n paperlamp-poc python -c "import pycolmap, trimesh, shapely, skimage, scipy, matplotlib, numpy" >/dev/null 2>&1 \
+    "$conda_bin" run -n paperlamp-poc python -c "import fast_simplification, pycolmap, trimesh, shapely, skimage, scipy, matplotlib, numpy" >/dev/null 2>&1 \
       && echo "found   paperlamp-poc:core-python-imports" \
       || echo "missing paperlamp-poc:core-python-imports"
   else
@@ -82,7 +82,7 @@ fi
 
 echo "python  $python_bin"
 
-for package in trimesh open3d pycolmap shapely numpy scikit-image scipy matplotlib; do
+for package in trimesh fast-simplification open3d pycolmap shapely numpy scikit-image scipy matplotlib; do
   if "$python_bin" -m pip show "$package" >/dev/null 2>&1; then
     printf "found   %-24s\n" "$package"
   else

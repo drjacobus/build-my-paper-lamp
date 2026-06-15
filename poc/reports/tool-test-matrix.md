@@ -45,7 +45,7 @@ Each tool or pipeline must be evaluated against the same checklist:
 | Tool | Local availability | Mesh tested | 2D output | Automation path | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | Blender Python | Missing | Not tested | Not tested | Scriptable | Deferred | We will first try `trimesh` + `shapely` for slicing before adding Blender. |
-| Papercraft unfold tool | Unknown | Not tested | Not tested | Unknown | Not started | Risk: too many tiny parts for organic forms. |
+| Papercraft unfold tool | Unknown | Faceted Dino shell tested through custom exporter | Raw labeled triangle SVG | Unknown/custom | Partial pass | Exported isolated labeled triangles from a 300-face shell. This is not yet a connected net with tabs. |
 | Custom lamp-plane script | Implemented as first visual-hull/rib prototype | Middlebury DinoRing | SVG rib sheet plus 3D rib render | Fully scriptable | Partial pass | Produced a rough visual hull, 12-rib SVG, and 20-rib orthogonal assembly render. Shape is still too noisy for a phase pass. |
 
 ## Tool Test Log
@@ -106,3 +106,15 @@ Each tool or pipeline must be evaluated against the same checklist:
 - Added `render-rib-assembly.py` to generate a 20-rib orthogonal assembly OBJ and multi-view PNG render from the voxel hull.
 - A stricter temporary visual-hull test with `--min-consensus 1.0` reduced occupancy to 57,436 voxels, but did not fix recognizability enough to replace the baseline.
 - Conclusion: the silhouette path produced the first raw image-to-plane and image-to-rib-render artifacts. It is still a rough prototype, but it avoids the local CUDA blocker.
+
+### 2026-06-15: Faceted Shell Template Tests
+
+- Installed `fast-simplification` so `trimesh.simplify_quadric_decimation` can produce low-poly shell variants.
+- Added `render-faceted-shell.py` to generate and render low-poly faceted shells.
+- Tested target face counts:
+  - 300 faces -> 149 vertices, not watertight after simplification;
+  - 800 faces -> 400 vertices, not watertight after simplification;
+  - 1600 faces -> 796 vertices, not watertight after simplification.
+- Added `export-faceted-template.py` to export a raw labeled triangle SVG from a low-poly shell.
+- Generated `dino-faceted-shell-300-template.svg` from the 300-face shell.
+- Conclusion: faceted shell output is visually closer to the intended paperlamp-kit direction than rib lattices, but the current visual hull still needs better shape fidelity and the template needs connected nets and tabs.

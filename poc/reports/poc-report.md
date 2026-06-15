@@ -13,6 +13,8 @@ Current best technical result:
 - COLMAP dense stereo is blocked locally by a CUDA requirement.
 - A silhouette-derived visual hull produced the first rough OBJ and 12-rib SVG sheet.
 - A 20-rib orthogonal assembly render exists, but recognizability is still weak.
+- A low-poly faceted shell path now exists and is closer to the target paperlamp-kit direction.
+- A raw 300-face labeled triangle SVG template exists, but it is not yet a proper connected papercraft net.
 
 ## Setup Findings
 
@@ -49,6 +51,7 @@ Reason:
 - No clean dense reconstructed mesh has been produced.
 - A rough printable-style 2D rib SVG exists, but it has not been cleaned, slotted, printed, or paged.
 - A rendered rib assembly exists, but it is not yet recognizable enough to pass Phase 1.
+- A raw faceted triangle template exists, but it lacks tabs, connected unfolding, page layout, and assembly validation.
 
 ## Experiment Results
 
@@ -150,7 +153,7 @@ Measured result:
 
 - 78,721 occupied voxels out of 262,144 after cleanup.
 - OBJ mesh: 20,738 vertices and 41,564 faces.
-- Mesh watertight check: false.
+- Mesh watertight check: true.
 - SVG output: 12 rib contours.
 
 Interpretation:
@@ -196,7 +199,75 @@ Interpretation:
 - The object is still too noisy and weakly recognizable compared with the curled stegosaurus source image.
 - This is progress toward Phase 1, but not a pass.
 
-### Experiment 6: Recognizable Organic Object
+### Experiment 6: Low-Poly Faceted Shell
+
+Status: Partial pass
+
+Input:
+
+- `poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull.obj`
+
+Command:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-faceted-shell.py \
+  --input-mesh poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull.obj \
+  --output-dir poc/output/middlebury-dino-ring/cleaned-mesh \
+  --face-counts 300 800 1600
+```
+
+Generated outputs:
+
+- `poc/output/middlebury-dino-ring/cleaned-mesh/dino-faceted-shell-300.obj`
+- `poc/output/middlebury-dino-ring/cleaned-mesh/dino-faceted-shell-800.obj`
+- `poc/output/middlebury-dino-ring/cleaned-mesh/dino-faceted-shell-1600.obj`
+- `poc/output/middlebury-dino-ring/cleaned-mesh/dino-faceted-shell-variants.png`
+
+Measured result:
+
+- 300 target faces -> 300 faces, 149 vertices, not watertight.
+- 800 target faces -> 800 faces, 400 vertices, not watertight.
+- 1600 target faces -> 1600 faces, 796 vertices, not watertight.
+
+Interpretation:
+
+- The faceted shell output is closer to the intended DIY paperlamp-kit direction than the rib lattice.
+- The shape remains too noisy and blobby to pass recognizability.
+- Better masks or a stronger reconstruction source are needed before template polish will matter.
+
+### Experiment 7: Raw Faceted Template Export
+
+Status: Partial pass
+
+Input:
+
+- `poc/output/middlebury-dino-ring/cleaned-mesh/dino-faceted-shell-300.obj`
+
+Command:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/export-faceted-template.py \
+  --input-mesh poc/output/middlebury-dino-ring/cleaned-mesh/dino-faceted-shell-300.obj \
+  --output-svg poc/output/middlebury-dino-ring/printable-planes/dino-faceted-shell-300-template.svg \
+  --target-max-mm 250
+```
+
+Generated output:
+
+- `poc/output/middlebury-dino-ring/printable-planes/dino-faceted-shell-300-template.svg`
+
+Measured result:
+
+- 300 individual triangle pieces.
+- Face IDs and edge IDs are printed into the SVG.
+- Output SVG size: about 165 KB.
+
+Interpretation:
+
+- This proves the low-poly shell can be converted into printable 2D facet geometry.
+- It does not yet prove a usable kit because the triangles are isolated rather than arranged as connected nets, and there are no glue tabs or page boundaries.
+
+### Experiment 8: Recognizable Organic Object
 
 Status: Not started
 
@@ -214,7 +285,7 @@ Result:
 
 - TBD
 
-### Experiment 7: Printable Plane Strategy
+### Experiment 9: Printable Plane Strategy
 
 Status: Not started
 
@@ -229,7 +300,7 @@ Result:
 
 - TBD
 
-### Experiment 8: Physical Or Rendered Validation
+### Experiment 10: Physical Or Rendered Validation
 
 Status: Not started
 
@@ -256,8 +327,8 @@ Result:
 
 ## Next Actions
 
-1. Improve mask quality and contour filtering until the Dino rib render is recognizably related to the source object.
-2. Add slot generation and page layout to the SVG rib output.
-3. Add side-by-side rendered validation against one or more source silhouettes.
-4. Repeat at a higher voxel resolution once the 64^3 result is cleaner.
+1. Improve mask quality and contour filtering until the Dino faceted shell is recognizably related to the source object.
+2. Convert isolated triangle templates into connected nets with tabs.
+3. Add page layout and assembly metadata to the SVG output.
+4. Add side-by-side rendered validation against one or more source silhouettes.
 5. Capture our own object photos only after the benchmark path produces a recognizable rendered assembly.

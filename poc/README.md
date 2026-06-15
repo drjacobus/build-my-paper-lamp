@@ -126,3 +126,23 @@ Render an orthogonal rib assembly preview with:
 ```
 
 This produces a 3D rib OBJ plus single-view and multi-view PNG renders. These generated artifacts are also ignored by git.
+
+Generate low-poly faceted shell variants with:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-faceted-shell.py \
+  --input-mesh poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull.obj \
+  --output-dir poc/output/middlebury-dino-ring/cleaned-mesh \
+  --face-counts 300 800 1600
+```
+
+Export a raw labeled triangle template from the 300-face shell with:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/export-faceted-template.py \
+  --input-mesh poc/output/middlebury-dino-ring/cleaned-mesh/dino-faceted-shell-300.obj \
+  --output-svg poc/output/middlebury-dino-ring/printable-planes/dino-faceted-shell-300-template.svg \
+  --target-max-mm 250
+```
+
+This template is not yet a friendly papercraft net. It is a raw proof artifact: individual triangular facets with face IDs and matching edge IDs.
