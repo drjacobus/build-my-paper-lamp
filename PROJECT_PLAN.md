@@ -16,6 +16,41 @@ If this cannot be proven with raw tools and scripts, adding a polished interface
 
 ## Phase 1: Raw Technical Proof Of Concept
 
+### Current Status
+
+Status as of 2026-06-15: **Started**
+
+What exists now:
+
+- POC workspace created under `poc/`.
+- Report template created at `poc/reports/poc-report.md`.
+- Tool matrix created at `poc/reports/tool-test-matrix.md`.
+- Repeatable local tool check created at `poc/scripts/check-tools.sh`.
+
+Initial findings:
+
+- COLMAP is not installed locally.
+- Blender is not installed locally.
+- Meshroom/AliceVision is not installed locally.
+- MeshLab server is not installed locally.
+- OpenSCAD is not installed locally.
+- Conda is available.
+- Anaconda Python is available.
+- NumPy, scikit-image, SciPy, and Matplotlib are available.
+- Mesh-focused Python packages such as `trimesh`, `open3d`, `pycolmap`, and `shapely` are not installed in the base Anaconda environment.
+
+Immediate blocker:
+
+- The first reconstruction cannot run locally until a reconstruction tool is installed or a cloud/API path with downloadable mesh output is selected.
+- The first robust mesh-to-plane conversion cannot run locally until Blender or equivalent mesh-processing libraries are installed.
+
+Next action:
+
+1. Install or provide a reconstruction path, with COLMAP as the preferred local baseline.
+2. Install or provide a mesh conversion path, with Blender Python or a Python mesh stack as the preferred path.
+3. Capture 30 to 60 photos of a simple matte object into `poc/input/simple-matte-object/images/`.
+4. Run Experiment 1 and record the output in `poc/reports/poc-report.md`.
+
 ### Goal
 
 Prove that a small set of object photos can become printable 2D parts that assemble into a recognizable 3D form.
