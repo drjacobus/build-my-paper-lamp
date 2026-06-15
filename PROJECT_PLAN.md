@@ -20,7 +20,7 @@ If this cannot be proven with raw tools and scripts, adding a polished interface
 
 ### Current Status
 
-Status as of 2026-06-15: **Started; first raw image-to-rib artifact generated**
+Status as of 2026-06-15: **Started; downstream Bunny template proof exists, now refocused on image-to-3D source quality**
 
 What exists now:
 
@@ -38,6 +38,7 @@ What exists now:
 - Raw faceted triangle template exporter created at `poc/scripts/export-faceted-template.py`.
 - Connected net exporter with simple glue tabs created at `poc/scripts/export-connected-nets.py`.
 - Mesh view renderer created at `poc/scripts/render-mesh-views.py`.
+- Sparse point-cloud preview renderer created at `poc/scripts/render-point-cloud.py`.
 - Same-object dataset source notes added for Tiny NeRF Lego, Middlebury DinoRing, and Stanford Bunny.
 - Middlebury DinoRing output folder added under `poc/output/middlebury-dino-ring/`.
 - Stanford Bunny output folder added under `poc/output/stanford-bunny/`.
@@ -86,22 +87,27 @@ Initial findings:
 - A raw 299-face Bunny triangle SVG template was generated at `poc/output/stanford-bunny/printable-planes/stanford-bunny-faceted-shell-300-template.svg`.
 - A connected Bunny net SVG was generated at `poc/output/stanford-bunny/printable-planes/stanford-bunny-connected-net-300.svg`.
 - The first connected net result contains 22 connected islands, 299 faces, and 116 glue tabs.
+- Bunny rendered-image COLMAP sparse reconstruction was tested:
+  - uncalibrated run: 27 of 48 registered images, 501 sparse points, 0.871273 px mean reprojection error;
+  - fixed `SIMPLE_PINHOLE` run: 39 of 48 registered images, 1054 sparse points, 0.971214 px mean reprojection error.
+- The calibrated Bunny sparse point cloud visually hints at ears/body silhouette, but remains far from a usable mesh.
 
 Immediate blocker:
 
 - We have a working sparse reconstruction baseline, a first rough silhouette-derived rib SVG, a rendered orthogonal rib assembly, low-poly faceted shell variants, a raw labeled triangle template, and a first connected net with glue tabs.
 - The faceted shell path is closer to the target paperlamp kit than the rib path.
 - Bunny shows that a cleaner, clearer animal source can preserve recognizable shape through low-poly faceting.
-- The remaining blocker is no longer "can a recognizable source become a faceted template"; it is "can user-provided photos produce a source shape clean enough for that template path."
+- The remaining blocker is no longer "can a recognizable source become a faceted template"; it is "can user-provided images produce a source shape clean enough for that template path."
+- COLMAP can recover partial sparse Bunny geometry from rendered images, especially with fixed camera assumptions, but this is not enough by itself because the product needs a usable mesh, not just camera poses and sparse points.
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 
 Next action:
 
 1. Promote Stanford Bunny to the controlled shape-fidelity benchmark.
 2. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
-3. Improve the connected net: fewer islands, cleaner tabs, fold/cut styling, page layout, and assembly metadata.
-4. Separately test how to obtain a Bunny-quality source shape from input photos or image-conditioned reconstruction.
-5. Later, capture our own 30 to 60 photo set once the benchmark pipeline has a working raw path.
+3. Focus Phase 1C on obtaining Bunny-quality source geometry from images.
+4. Test image-to-mesh options end to end with no UI and no product wrapper.
+5. Return to connected-net polish only after the image-to-3D source step has a credible route.
 
 ### Goal
 
@@ -337,6 +343,55 @@ Expected output:
 - Final output image or render
 - Assembly notes
 - Final pass/fail assessment
+
+## Phase 1C: Image-To-3D Source Shape Proof
+
+### Why This Phase Exists
+
+The Bunny benchmark proved an important downstream point: if we already have a clean animal mesh, the pipeline can simplify it into a recognizable faceted shell and export paper-style connected nets.
+
+That does not yet prove the product. The product depends on getting that clean-enough source shape from user images.
+
+Phase 1C is therefore the current focus. It should answer one narrow question:
+
+> Can a few images of the same object produce a usable 3D source mesh for the paperlamp pipeline?
+
+### Current Evidence
+
+- COLMAP is useful as a local sparse reconstruction and camera-recovery baseline.
+- Calibrated DinoRing produced sparse models across 47 of 48 real images, split into two partial models.
+- COLMAP dense stereo is blocked locally because the installed build requires CUDA.
+- Bunny rendered-image reconstruction produced a better calibrated sparse baseline:
+  - uncalibrated: 27 of 48 views, 501 sparse points;
+  - fixed `SIMPLE_PINHOLE`: 39 of 48 views, 1054 sparse points.
+- Sparse output is not sufficient for the product by itself. We need a mesh or a reliable silhouette/visual-hull substitute.
+
+### Candidate Routes To Test
+
+1. **Photogrammetry mesh route**
+   - Use COLMAP or a comparable tool to produce camera poses and dense geometry.
+   - Needs a non-CUDA dense step locally, a different COLMAP build/environment, or a cloud/GPU worker.
+
+2. **Silhouette plus known/estimated camera route**
+   - Segment the object from each image.
+   - Use camera poses from COLMAP or controlled capture assumptions.
+   - Build a visual hull mesh that can feed the faceted-shell pipeline.
+
+3. **Image-conditioned mesh generation route**
+   - Use an API or model that returns a downloadable mesh from one or more images.
+   - A short text description can help this route, especially for semantic features like "rabbit with long ears" or "dinosaur with back spikes".
+   - Text should be treated as optional guidance, not magic. It may improve plausibility but can also hallucinate details that were not actually visible.
+
+### Phase 1C Success Criteria
+
+Phase 1C passes only if one route produces:
+
+- a downloadable or locally generated mesh from image input;
+- recognizable object-specific silhouette and major features;
+- enough geometric cleanliness to simplify into a faceted shell;
+- repeatable commands or API calls documented in `poc/reports/poc-report.md`.
+
+If Phase 1C does not pass, the product should not move to UI. The honest options would be narrowing supported objects, using guided capture with stricter constraints, relying on a vetted image-to-3D provider, or shifting toward curated/semi-manual templates.
 
 ## Phase 1 Deliverables
 

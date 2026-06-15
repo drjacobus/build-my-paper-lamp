@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Phase 1 has started. No tool has passed the end-to-end proof yet, but COLMAP now has a working calibrated same-object sparse reconstruction baseline.
+Phase 1 has started. No tool has passed the full image-to-printable-kit proof yet. COLMAP has a working sparse reconstruction baseline, and Bunny now proves the downstream mesh-to-faceted-template path when the source mesh is already clean.
 
 Initial local availability check:
 
@@ -36,9 +36,9 @@ Each tool or pipeline must be evaluated against the same checklist:
 
 | Tool | Local availability | Input tested | Mesh output | Automation path | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| COLMAP | Installed in `paperlamp-poc` | Tiny NeRF Lego, Middlebury DinoRing | Sparse reconstruction only so far | CLI | Partial pass | Tiny NeRF failed to produce useful sparse geometry. Calibrated DinoRing produced two sparse models covering 47 of 48 images. Dense stereo failed locally because this COLMAP build requires CUDA. |
+| COLMAP | Installed in `paperlamp-poc` | Tiny NeRF Lego, Middlebury DinoRing, Stanford Bunny rendered views | Sparse reconstruction only so far | CLI | Partial pass | Tiny NeRF failed to produce useful sparse geometry. Calibrated DinoRing produced two sparse models covering 47 of 48 images. Bunny rendered views produced 39/48 registered images and 1054 sparse points with fixed `SIMPLE_PINHOLE` intrinsics. Dense stereo failed locally because this COLMAP build requires CUDA. |
 | Meshroom / AliceVision | Missing | Not tested | Not tested | CLI/GUI mixed | Blocked until installed | Useful comparison if available. |
-| Cloud/API image-to-3D | Unknown | Not tested | Not tested | API-dependent | Not started | Only useful if it returns downloadable meshes. |
+| Cloud/API image-to-3D | Existing repo client stub for Tripo; not validated in Phase 1 | Not tested in current POC | Not tested | API-dependent | Not started | Only useful if it returns downloadable meshes. Text descriptions may help semantic shape, but outputs must be checked for hallucinated geometry. |
 
 ## Mesh Cleanup And 2D Conversion Tools
 
@@ -47,6 +47,7 @@ Each tool or pipeline must be evaluated against the same checklist:
 | Blender Python | Missing | Not tested | Not tested | Scriptable | Deferred | We will first try `trimesh` + `shapely` for slicing before adding Blender. |
 | Papercraft unfold tool | Custom first-pass exporter | Faceted Dino and Bunny shells tested through custom exporter | Raw labeled triangle SVG and connected net SVG | Custom Python | Partial pass | Exported isolated labeled triangles and a first Bunny connected net with glue tabs. Needs page layout, fold styling, and assembly validation. |
 | Custom lamp-plane script | Implemented as first visual-hull/rib prototype | Middlebury DinoRing | SVG rib sheet plus 3D rib render | Fully scriptable | Partial pass | Produced a rough visual hull, 12-rib SVG, and 20-rib orthogonal assembly render. Shape is still too noisy for a phase pass. |
+| Point-cloud preview renderer | Implemented | Stanford Bunny COLMAP sparse point cloud | PNG diagnostic render | Custom Python | Pass as diagnostic only | Confirms sparse reconstructions can be visually inspected quickly, but does not create printable geometry. |
 
 ## Tool Test Log
 
@@ -156,3 +157,20 @@ Each tool or pipeline must be evaluated against the same checklist:
   - 116 glue tabs;
   - SVG page height: about 720 mm.
 - Conclusion: this is the first artifact that looks structurally like a paper kit rather than a pile of unrelated triangles. It still needs better unfolding, page layout, fold/cut styling, and assembly validation.
+
+### 2026-06-15: Bunny Image-To-3D Diagnostic
+
+- Ran COLMAP sparse reconstruction on the 48 rendered Stanford Bunny views.
+- Uncalibrated result:
+  - 27 registered images;
+  - 501 sparse points;
+  - 2287 observations;
+  - 0.871273 px mean reprojection error.
+- Re-ran with fixed `SIMPLE_PINHOLE` camera parameters `960,400,400`.
+- Fixed-camera result:
+  - 39 registered images;
+  - 1054 sparse points;
+  - 4987 observations;
+  - 0.971214 px mean reprojection error.
+- Exported and rendered the calibrated sparse point cloud to `sparse-bunny-calibrated-preview.png`.
+- Conclusion: camera assumptions significantly improve registration, and the sparse cloud visually hints at Bunny ears/body. Sparse reconstruction is still not enough for the product. The current blocker is image-to-usable-mesh, not mesh-to-template.

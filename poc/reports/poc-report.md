@@ -18,6 +18,12 @@ Current best technical result:
 - Stanford Bunny was added as a better controlled animal test object.
 - Bunny produces a much more recognizable low-poly animal shell than Dino.
 - A first connected Bunny net with glue tabs now exists.
+- A controlled image-to-3D diagnostic was run on the 48 rendered Bunny views.
+- COLMAP recovered a partial sparse Bunny model:
+  - uncalibrated: 27 of 48 registered images, 501 sparse points, 0.871273 px mean reprojection error;
+  - fixed `SIMPLE_PINHOLE`: 39 of 48 registered images, 1054 sparse points, 0.971214 px mean reprojection error.
+- The best sparse Bunny point cloud was exported and rendered for visual inspection; it hints at ears/body shape but is not a usable surface.
+- This confirms camera/image quality matters, but the current local path still does not produce the clean source mesh needed by the product.
 
 ## Setup Findings
 
@@ -56,7 +62,7 @@ Reason:
 - A rendered rib assembly exists, but it is not yet recognizable enough to pass Phase 1.
 - A raw faceted triangle template exists, but it lacks tabs, connected unfolding, page layout, and assembly validation.
 - The connected Bunny net has tabs and connected islands, but still lacks page layout, fold-line styling, and assembly validation.
-- A controlled Bunny benchmark produces recognizable faceted shell output, but it bypasses user-photo reconstruction.
+- A controlled Bunny benchmark produces recognizable faceted shell output, but the best image-derived Bunny result is still sparse geometry rather than a usable mesh.
 
 ## Experiment Results
 
@@ -373,7 +379,81 @@ Interpretation:
 - It still does not pass Phase 1 because page layout, fold/cut line styling, assembly order, and physical/rendered reassembly validation are missing.
 - The result confirms that connected-net generation is a viable next workstream for the Bunny benchmark.
 
-### Experiment 10: User-Captured Recognizable Organic Object
+### Experiment 10: Bunny Rendered-Image Sparse Reconstruction
+
+Status: Partial pass as a diagnostic; not sufficient for product
+
+Input object:
+
+- 48 synthetic same-object rendered views of Stanford Bunny under `poc/input/stanford-bunny/images/`.
+
+Commands:
+
+```bash
+poc/scripts/run-colmap-sparse.sh \
+  poc/input/stanford-bunny/images \
+  poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc colmap model_analyzer \
+  --path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images/sparse/0
+```
+
+```bash
+poc/scripts/run-colmap-sparse.sh \
+  poc/input/stanford-bunny/images \
+  poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated \
+  SIMPLE_PINHOLE \
+  960,400,400
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc colmap model_analyzer \
+  --path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated/sparse/0
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc colmap model_converter \
+  --input_path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated/sparse/0 \
+  --output_path poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated/sparse-bunny-calibrated.ply \
+  --output_type PLY
+```
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/render-point-cloud.py \
+  --input poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated/sparse-bunny-calibrated.ply \
+  --output poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated/sparse-bunny-calibrated-preview.png
+```
+
+Measured result:
+
+- Uncalibrated run:
+  - 27 registered images out of 48;
+  - 501 sparse points;
+  - 2287 observations;
+  - 4.564870 mean track length;
+  - 84.703704 mean observations per image;
+  - 0.871273 px mean reprojection error.
+- Fixed `SIMPLE_PINHOLE` run:
+  - 39 registered images out of 48;
+  - 1054 sparse points;
+  - 4987 observations;
+  - 4.731499 mean track length;
+  - 127.871795 mean observations per image;
+  - 0.971214 px mean reprojection error.
+- Exported preview:
+  - `poc/output/stanford-bunny/reconstruction/colmap-sparse-rendered-images-calibrated/sparse-bunny-calibrated-preview.png`;
+  - visual read: the point cloud hints at the Bunny ears and seated body, but remains sparse and incomplete.
+
+Interpretation:
+
+- Fixed camera assumptions materially improved registration coverage.
+- The synthetic Bunny views are useful as a reconstruction diagnostic but are not equivalent to real phone photos.
+- Sparse COLMAP output alone is not a product-ready source shape. It gives camera poses and points, not a watertight mesh suitable for faceting/unfolding.
+- The current first-part blocker is therefore: choose or build a route from images to usable mesh. Candidate routes are non-CUDA dense photogrammetry, silhouette visual hull with camera poses, or an image-conditioned mesh provider that returns downloadable OBJ/GLB/STL.
+
+### Experiment 11: User-Captured Recognizable Organic Object
 
 Status: Not started
 
@@ -391,7 +471,7 @@ Result:
 
 - TBD
 
-### Experiment 11: Printable Plane Strategy
+### Experiment 12: Printable Plane Strategy
 
 Status: Not started
 
@@ -406,7 +486,7 @@ Result:
 
 - TBD
 
-### Experiment 12: Physical Or Rendered Validation
+### Experiment 13: Physical Or Rendered Validation
 
 Status: Not started
 
@@ -430,11 +510,12 @@ Result:
 - Sparse reconstruction alone may not contain enough surface information for printable plane generation.
 - Dense reconstruction may require additional COLMAP steps, Blender, Meshroom/AliceVision, or a custom silhouette/visual-hull path.
 - Public benchmark success may not transfer directly to casual phone photos.
+- Image-conditioned mesh APIs may hallucinate shape detail. A text prompt can help semantic features, but it cannot replace geometric evidence.
 
 ## Next Actions
 
-1. Improve the Bunny connected net: fewer islands, cleaner tabs, fold/cut styling, and page layout.
-2. Add assembly metadata and ordering to the SVG output.
-3. Validate that the connected net can reconstruct the faceted shell.
-4. Separately test how to get Bunny-quality source geometry from real input photos or image-conditioned reconstruction.
-5. Capture our own object photos after the controlled benchmark can produce a usable paperlamp-style template.
+1. Treat Stanford Bunny as the controlled benchmark for source-shape quality.
+2. Test one route that produces a real mesh from the Bunny images, not just a sparse point cloud.
+3. Compare three candidate image-to-3D routes: non-CUDA/local photogrammetry, silhouette visual hull using recovered or controlled cameras, and image-conditioned mesh generation with downloadable output.
+4. Only return to connected-net polish after the source mesh route is credible.
+5. Capture our own object photos after the image-to-3D route works on the controlled benchmark.
