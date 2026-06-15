@@ -18,7 +18,7 @@ If this cannot be proven with raw tools and scripts, adding a polished interface
 
 ### Current Status
 
-Status as of 2026-06-15: **Started; same-object reconstruction baseline found**
+Status as of 2026-06-15: **Started; first raw image-to-rib artifact generated**
 
 What exists now:
 
@@ -30,6 +30,7 @@ What exists now:
 - Reproducible environment file created at `poc/environment.yml`.
 - COLMAP automatic reconstruction wrapper created at `poc/scripts/run-colmap-auto.sh`.
 - COLMAP headless sparse reconstruction wrapper created at `poc/scripts/run-colmap-sparse.sh`.
+- Silhouette visual-hull and rib SVG script created at `poc/scripts/build-visual-hull.py`.
 - Same-object dataset source notes added for Tiny NeRF Lego and Middlebury DinoRing.
 - Middlebury DinoRing output folder added under `poc/output/middlebury-dino-ring/`.
 
@@ -54,19 +55,25 @@ Initial findings:
 - Calibrated DinoRing COLMAP produced two sparse models covering 47 of 48 images:
   - model 0: 23 registered images, 704 sparse points, 0.725452 px mean reprojection error;
   - model 1: 24 registered images, 511 sparse points, 0.807898 px mean reprojection error.
+- COLMAP image undistortion worked for the calibrated DinoRing model 0.
+- COLMAP dense stereo failed locally because this COLMAP build requires CUDA for dense reconstruction.
+- DinoRing silhouette visual hull at 64^3 generated:
+  - 77,739 occupied voxels out of 262,144;
+  - rough OBJ mesh with 21,566 vertices and 43,336 faces;
+  - first 12-rib SVG sheet at `poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull-ribs.svg`.
 
 Immediate blocker:
 
-- We have a working sparse reconstruction baseline, but no dense mesh or printable 2D plane output yet.
-- The next blocker is selecting and proving the dense reconstruction / mesh generation step from the calibrated DinoRing run.
-- The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
+- We have a working sparse reconstruction baseline and a first rough silhouette-derived rib SVG.
+- The visual-hull mesh is rough and not watertight yet, so the next blocker is cleanup, recognizability validation, and better rib generation.
+- The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 
 Next action:
 
-1. Use Middlebury DinoRing as the first controlled same-object benchmark.
-2. Convert the calibrated COLMAP sparse result into dense geometry or a silhouette-derived visual hull.
-3. Generate the first raw contour/rib plane SVGs with `trimesh` and `shapely`.
-4. Render the generated planes and compare them against the source object silhouette.
+1. Improve the visual-hull output so the OBJ is clean enough for stable slicing and rendering.
+2. Improve the generated rib SVG: reduce noisy contours, add slots, normalize scale, and split across printable pages.
+3. Render the rib planes in 3D and compare them against the Dino source silhouette.
+4. Repeat the pipeline at a higher voxel resolution if the 64^3 result remains recognizable.
 5. Later, capture our own 30 to 60 photo set once the benchmark pipeline has a working raw path.
 
 ### Goal

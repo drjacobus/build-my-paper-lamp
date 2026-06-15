@@ -10,7 +10,8 @@ Current best technical result:
 
 - A controlled same-object benchmark has been found: Middlebury DinoRing.
 - COLMAP sparse reconstruction works on DinoRing when the provided camera calibration is used.
-- The reconstruction is still sparse only; no dense mesh or printable 2D plane output exists yet.
+- COLMAP dense stereo is blocked locally by a CUDA requirement.
+- A silhouette-derived visual hull produced the first rough OBJ and 12-rib SVG sheet.
 
 ## Setup Findings
 
@@ -44,8 +45,8 @@ Current status: **Not ready for Phase 2**
 Reason:
 
 - Input image sets have only been tested through sparse reconstruction.
-- No dense reconstructed mesh has been produced.
-- No printable 2D plane output has been produced.
+- No clean dense reconstructed mesh has been produced.
+- A rough printable-style 2D rib SVG exists, but it has not been cleaned, slotted, printed, or rendered as an assembly.
 - No assembled or rendered validation exists yet.
 
 ## Experiment Results
@@ -99,7 +100,65 @@ Interpretation:
 - The sparse output does not yet satisfy Phase 1 because it is not a dense object mesh and cannot directly become printable planes.
 - The next raw proof step should test dense geometry or a silhouette-derived visual hull from the DinoRing images.
 
-### Experiment 3: Recognizable Organic Object
+### Experiment 3: Dense Geometry Attempt
+
+Status: Failed locally
+
+Input object:
+
+- Middlebury DinoRing, calibrated COLMAP sparse model 0.
+
+Result:
+
+- COLMAP `image_undistorter` worked for 23 registered images.
+- COLMAP `patch_match_stereo` failed with: dense stereo reconstruction requires CUDA.
+
+Interpretation:
+
+- The local COLMAP package is still useful for sparse reconstruction and calibration checks.
+- Dense reconstruction through this COLMAP build is not viable on this machine unless we use a CUDA-capable environment.
+- The POC should continue with a non-CUDA silhouette/visual-hull route before adding heavier tools.
+
+### Experiment 4: Silhouette Visual Hull And Rib SVG
+
+Status: Partial pass
+
+Input object:
+
+- Middlebury DinoRing, 43 curated good-silhouette images and provided camera calibration.
+
+Command:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/build-visual-hull.py \
+  --image-dir poc/input/middlebury-dino-ring/images \
+  --camera-file poc/input/middlebury-dino-ring/raw/dinoRing/dinoR_par.txt \
+  --silhouette-list poc/input/middlebury-dino-ring/raw/dinoRing/dinoR_good_silhouette_images.txt \
+  --output-dir poc/output/middlebury-dino-ring/printable-planes \
+  --resolution 64 \
+  --rib-count 12
+```
+
+Generated outputs:
+
+- `poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull-voxels.npz`
+- `poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull.obj`
+- `poc/output/middlebury-dino-ring/printable-planes/dino-visual-hull-ribs.svg`
+
+Measured result:
+
+- 77,739 occupied voxels out of 262,144.
+- OBJ mesh: 21,566 vertices and 43,336 faces.
+- Mesh watertight check: false.
+- SVG output: 12 rib contours.
+
+Interpretation:
+
+- This is the first raw artifact that converts same-object images into 2D printable-style plane outlines.
+- It does not yet pass Phase 1 because the ribs are noisy, unslotted, unpaged, and not yet rendered or physically assembled.
+- The path is promising because it avoids the CUDA blocker and aligns with the lamp-plane product direction.
+
+### Experiment 5: Recognizable Organic Object
 
 Status: Not started
 
@@ -117,7 +176,7 @@ Result:
 
 - TBD
 
-### Experiment 4: Printable Plane Strategy
+### Experiment 6: Printable Plane Strategy
 
 Status: Not started
 
@@ -132,7 +191,7 @@ Result:
 
 - TBD
 
-### Experiment 5: Physical Or Rendered Validation
+### Experiment 7: Physical Or Rendered Validation
 
 Status: Not started
 
@@ -159,8 +218,8 @@ Result:
 
 ## Next Actions
 
-1. Run a dense geometry attempt from the calibrated DinoRing reconstruction.
-2. In parallel, test a silhouette-derived visual-hull or contour/rib approach using the DinoRing masks/background.
-3. Generate first raw SVG/PDF plane outputs with `trimesh` and `shapely`.
-4. Render the planes in 3D and compare against the DinoRing source images.
-5. Capture our own object photos only after the benchmark path produces inspectable plane output.
+1. Clean the visual-hull mesh and rib contours.
+2. Add slot generation and page layout to the SVG rib output.
+3. Render the 12 rib planes in 3D and compare against the DinoRing source images.
+4. Repeat at a higher voxel resolution if the low-resolution hull remains recognizable.
+5. Capture our own object photos only after the benchmark path produces an inspectable rendered assembly.

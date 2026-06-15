@@ -36,7 +36,7 @@ Each tool or pipeline must be evaluated against the same checklist:
 
 | Tool | Local availability | Input tested | Mesh output | Automation path | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
-| COLMAP | Installed in `paperlamp-poc` | Tiny NeRF Lego, Middlebury DinoRing | Sparse reconstruction only so far | CLI | Partial pass | Tiny NeRF failed to produce useful sparse geometry. Calibrated DinoRing produced two sparse models covering 47 of 48 images. |
+| COLMAP | Installed in `paperlamp-poc` | Tiny NeRF Lego, Middlebury DinoRing | Sparse reconstruction only so far | CLI | Partial pass | Tiny NeRF failed to produce useful sparse geometry. Calibrated DinoRing produced two sparse models covering 47 of 48 images. Dense stereo failed locally because this COLMAP build requires CUDA. |
 | Meshroom / AliceVision | Missing | Not tested | Not tested | CLI/GUI mixed | Blocked until installed | Useful comparison if available. |
 | Cloud/API image-to-3D | Unknown | Not tested | Not tested | API-dependent | Not started | Only useful if it returns downloadable meshes. |
 
@@ -46,7 +46,7 @@ Each tool or pipeline must be evaluated against the same checklist:
 | --- | --- | --- | --- | --- | --- | --- |
 | Blender Python | Missing | Not tested | Not tested | Scriptable | Deferred | We will first try `trimesh` + `shapely` for slicing before adding Blender. |
 | Papercraft unfold tool | Unknown | Not tested | Not tested | Unknown | Not started | Risk: too many tiny parts for organic forms. |
-| Custom lamp-plane script | Not implemented | Not tested | Not tested | Fully scriptable | Not started | Strong candidate for MVP if contour/rib output works. |
+| Custom lamp-plane script | Implemented as first visual-hull/rib prototype | Middlebury DinoRing | SVG rib sheet | Fully scriptable | Partial pass | Produced a rough visual hull and 12-rib SVG from calibrated silhouettes. Needs cleanup, slots, rendering, and recognizability validation. |
 
 ## Tool Test Log
 
@@ -92,3 +92,15 @@ Each tool or pipeline must be evaluated against the same checklist:
   - 3309 observations;
   - 0.807898 px mean reprojection error.
 - Conclusion: COLMAP is viable as the first reconstruction baseline when calibrated same-object images are available. The next test is dense geometry or silhouette-derived visual hull creation.
+
+### 2026-06-15: Dense And Visual-Hull Tests
+
+- COLMAP `image_undistorter` worked on calibrated DinoRing model 0 and wrote an undistorted dense workspace.
+- COLMAP `patch_match_stereo` failed because the installed COLMAP build requires CUDA for dense stereo on this machine.
+- Added `build-visual-hull.py` to test a silhouette-derived route using the DinoRing camera calibration and good-silhouette image list.
+- Visual-hull result at 64^3 resolution:
+  - 77,739 occupied voxels out of 262,144;
+  - OBJ mesh with 21,566 vertices and 43,336 faces;
+  - mesh is not watertight yet;
+  - generated a 12-rib SVG sheet.
+- Conclusion: the silhouette path produced the first raw image-to-plane artifact. It is still a rough prototype, but it avoids the local CUDA blocker.

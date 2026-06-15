@@ -99,3 +99,17 @@ poc/scripts/run-colmap-sparse.sh \
 ```
 
 The raw DinoRing images and generated COLMAP outputs are intentionally gitignored. The source notes and measured results live in `poc/input/middlebury-dino-ring/SOURCE.md` and `poc/reports/poc-report.md`.
+
+Run the first silhouette visual-hull and rib SVG attempt with:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/build-visual-hull.py \
+  --image-dir poc/input/middlebury-dino-ring/images \
+  --camera-file poc/input/middlebury-dino-ring/raw/dinoRing/dinoR_par.txt \
+  --silhouette-list poc/input/middlebury-dino-ring/raw/dinoRing/dinoR_good_silhouette_images.txt \
+  --output-dir poc/output/middlebury-dino-ring/printable-planes \
+  --resolution 64 \
+  --rib-count 12
+```
+
+This produces a rough voxel hull, OBJ, and SVG rib sheet under `poc/output/middlebury-dino-ring/printable-planes/`. Those generated artifacts are ignored by git.
