@@ -1,512 +1,375 @@
-# Build My Paper Lamp — Project Plan
+# Build My Paper Lamp - Project Plan
 
-**Project:** Web app that converts real-world objects (phone photos) → 3D models → vector outlines for paper lamp laser cutting  
-**Platform:** Progressive Web App (PWA) — works on any phone browser  
-**Tech Stack:** Next.js 14, React, TypeScript, Tailwind CSS, Shadcn/ui  
-**Deployment:** Vercel  
-**Status:** 🔴 Not Started — Ready for MVP build
+## Project Goal
 
----
+Build a system that turns several input photos of an object into printable 2D paper or card planes that can be cut, folded, slotted, or glued into a recognizable 3D object inspired by the original image.
 
-## 📋 Project Overview
+The project must prove the technical pipeline before investing in UI, branding, automation, hosting, or marketing.
 
-### **Problem**
-Users want to create DIY paper lamps from custom 3D objects (dogs, toucans, etc.) but the workflow is complex:
-1. Capture object with phone camera
-2. Convert to 3D model
-3. Extract vector outlines
-4. Unfold to flat patterns
-5. Send to laser cutter
+## Guiding Principle
 
-### **Solution**
-Build a **single integrated web app** that guides users through the entire pipeline with a clean UI, real-time feedback, and downloadable SVG files.
+The first milestone is not an app. The first milestone is proof that the core transformation works:
 
-### **Success Criteria**
-- ✅ User can upload 15-50 photos from phone
-- ✅ App displays 3D model preview
-- ✅ App generates vector outline (SVG)
-- ✅ SVG is downloadable and laser-cutter ready
-- ✅ Works on mobile browsers (iOS Safari, Android Chrome)
-- ✅ Process completes in <5 minutes per object
+> Input photos -> 3D reconstruction -> simplified geometry -> printable 2D planes -> recognizable assembled object.
 
----
+If this cannot be proven with raw tools and scripts, adding a polished interface will only hide the uncertainty. Phase 1 is therefore a lab-style proof of concept with no UI and no product logic.
 
-## 🏗️ Architecture
+## Phase 1: Raw Technical Proof Of Concept
 
-```
-┌─────────────────────────────────────────┐
-│         PHONE BROWSER (PWA)             │
-│  ┌─────────────────────────────────┐   │
-│  │  Frontend: Next.js + React      │   │
-│  │  - Camera capture UI            │   │
-│  │  - Photo gallery                │   │
-│  │  - 3D model viewer              │   │
-│  │  - Vector preview               │   │
-│  └──────────────┬──────────────────┘   │
-└─────────────────┼──────────────────────┘
-                  │ (HTTP/WebSocket)
-        ┌─────────▼──────────┐
-        │  BACKEND (Node)    │
-        │  ┌──────────────┐  │
-        │  │ API Routes:  │  │
-        │  │ - /upload    │  │
-        │  │ - /process   │  │
-        │  │ - /status    │  │
-        │  │ - /download  │  │
-        │  └──────────────┘  │
-        └──────────┬─────────┘
-                   │
-      ┌────────────┼────────────┐
-      │            │            │
-   ┌──▼──┐    ┌───▼────┐   ┌───▼────┐
-   │KIRI │    │SketchEdge   │ Optional│
-   │Engine   │   API    │ (Fallback)│
-   │API │    └────────┘   └────────┘
-   └─────┘   (Vector)
-   (3D)
-```
+### Goal
 
-### **Data Flow**
-```
-User Phone
-    ↓
-[Camera Capture] → 15-50 photos
-    ↓
-[LocalStorage] → Queue in browser
-    ↓
-[Upload] → Send to Backend
-    ↓
-Backend/Job Queue
-    ↓
-[KIRI Engine API] → 3D model (OBJ/GLB)
-    ↓
-[SketchEdge API] → Vector outline (SVG)
-    ↓
-[SVG Processing] → Clean up, optimize, make laser-ready
-    ↓
-[WebSocket Update] → Send back to phone
-    ↓
-User Phone
-    ↓
-[Display SVG] → Preview + Download
-```
+Prove that a small set of object photos can become printable 2D parts that assemble into a recognizable 3D form.
 
----
+### Explicitly Out Of Scope
 
-## 📅 Development Phases
+- No landing page
+- No camera UI
+- No upload flow
+- No accounts
+- No payments
+- No Vercel deployment
+- No polished frontend
+- No mobile browser flow
+- No automated user journey
 
-### **Phase 1: MVP (Weeks 1-2)**
-**Goal:** End-to-end workflow working (photos → SVG download)
+Phase 1 should use folders, scripts, command-line tools, generated files, manual inspection, and physical or rendered validation.
 
-#### **Week 1: Foundation**
-- [ ] Set up Next.js 14 project with TypeScript
-- [ ] Create folder structure (components, pages, api, lib, utils)
-- [ ] Set up Shadcn/ui + Tailwind CSS
-- [ ] Design mobile-responsive layout (Figma/code)
+### Test Inputs
 
-#### **Features (Week 1)**
-1. **Landing Page** (`/`)
-   - Hero section explaining what the app does
-   - "Start Capturing" CTA button
-   - Feature highlights
+Use 3 to 5 controlled test objects:
 
-2. **Capture Page** (`/capture`)
-   - Camera access prompt
-   - Real-time camera preview
-   - "Take Photo" button
-   - Flash toggle (optional)
-   - Photo gallery (thumbnails of taken photos)
-   - "Proceed to Processing" button
-   - Min/max photo validation (15-50 photos)
+1. A simple matte object, such as a mug, vase, blocky toy, or small sculpture.
+2. A recognizable organic object, such as a plush animal or figurine.
+3. A difficult object, such as something glossy, thin, dark, or low-texture.
+4. One object that matches the final paper lamp product vision.
 
-3. **Processing Page** (`/processing`)
-   - Show upload progress
-   - Display status messages (uploading, processing, generating vector)
-   - Loading animation
-   - Estimated time remaining
+Each object should have a dedicated input folder containing the source images. Start with 20 to 60 photos per object when testing photogrammetry-style tools.
 
-#### **Backend (Week 1)**
-- [ ] Create `/api/upload` endpoint (multipart file upload)
-- [ ] Create `/api/process` endpoint (orchestrate KIRI + SketchEdge)
-- [ ] Create `/api/status` endpoint (job status polling)
-- [ ] Set up error handling & validation
+### Required Outputs
 
----
+For each serious test object, produce:
 
-#### **Week 2: Integration + Polish**
-1. **Results Page** (`/results`)
-   - Display 3D model preview (Three.js or Babylon.js)
-   - Display vector outline (SVG preview)
-   - Download SVG button
-   - Copy SVG to clipboard
-   - Share/export options
+- Source image set
+- Reconstructed 3D mesh, such as OBJ, GLB, STL, or PLY
+- Cleaned or simplified mesh
+- Printable 2D planes as SVG, PDF, or DXF
+- Assembly notes
+- Rendered or photographed evidence that the output resembles the input object
+- Short notes on what worked, what failed, and whether the result is repeatable
 
-2. **API Integration**
-   - [ ] Integrate KIRI Engine API (3D scanning)
-   - [ ] Integrate SketchEdge API (vector extraction)
-   - [ ] Handle API errors gracefully
-   - [ ] Implement retry logic for failed jobs
+### Success Criteria
 
-3. **Local Storage & Offline**
-   - [ ] Save photos locally before upload
-   - [ ] Persist job status
-   - [ ] Allow resume if connection drops
+Phase 1 succeeds only if:
 
-4. **Mobile Optimization**
-   - [ ] Test on iOS Safari + Android Chrome
-   - [ ] Responsive layout tweaks
-   - [ ] Touch-friendly buttons
-   - [ ] Vibration feedback on capture
+- At least one object can go from photos to printable 2D parts end to end.
+- The generated 2D parts can realistically be printed or laser cut.
+- The assembled or rendered result is visibly related to the original object.
+- The process is documented well enough to repeat with a second object.
 
-#### **Deliverable: MVP Launch**
-- Public Vercel URL
-- Works on phone browsers
-- Full end-to-end workflow
-- User can download laser-cutter-ready SVG
+If these criteria are not met, do not move into UI development.
 
----
+## Phase 1A: Tool Testing Matrix
 
-### **Phase 2: Enhanced Features (Weeks 3-4)**
-- [ ] 3D model viewer with rotation/zoom (Three.js)
-- [ ] Vector outline adjustments (line thickness, smoothing)
-- [ ] Batch processing (multiple objects at once)
-- [ ] History/saved objects
-- [ ] Account system (optional: save designs)
-- [ ] Sharing designs as link/QR code
-- [ ] Material selection (paper weight, color)
-- [ ] Unfolding visualization (show how paper unfolds)
+The goal is not to find the most impressive demo. The goal is to find a repeatable pipeline that can eventually become productized.
 
-### **Phase 3: Production Ready (Weeks 5-6)**
-- [ ] Analytics & monitoring
-- [ ] Payment integration (if monetizing)
-- [ ] Admin dashboard (monitor API usage)
-- [ ] Database for user designs (Supabase/Firebase)
-- [ ] Email notifications
-- [ ] Advanced 3D editing tools
+Each candidate pipeline should be tested against the same checklist:
 
----
+- Can it process our input photos?
+- Does it produce a downloadable 3D mesh?
+- Is the mesh clean enough to simplify?
+- Can the mesh be converted into 2D printable parts?
+- How much manual cleanup is required?
+- Is the result recognizable?
+- Could this process later be automated?
+- What are the licensing, cost, and runtime constraints?
 
-## 🛠️ Tech Stack Details
+### 3D Reconstruction Candidates
 
-### **Frontend**
-```
-Framework: Next.js 14 (App Router)
-Language: TypeScript
-UI Library: Shadcn/ui + Radix UI
-Styling: Tailwind CSS
-3D Viewer: Three.js or Babylon.js
-Camera: react-camera or navigator.mediaDevices API
-Storage: localStorage + IndexedDB
-State: React Context or Zustand
-HTTP Client: fetch or axios
-SVG Handling: SVG.js or D3.js
-```
+#### COLMAP
 
-### **Backend**
-```
-Runtime: Node.js 18+
-Framework: Express.js (via Next.js API Routes)
-File Upload: multer or formidable
-Job Queue: Optional (Bull + Redis, if heavy processing)
-Monitoring: Sentry or similar
-Logging: Winston or pino
-Rate Limiting: express-rate-limit
-```
+Use COLMAP as a local, reproducible photogrammetry baseline.
 
-### **APIs & Services**
-```
-3D Scanning: KIRI Engine API (https://www.kiriengine.app/)
-Vector Extraction: SketchEdge API (https://sketchedge.net/en) or Vectorizer.AI
-3D Model Viewer: Three.js (free) or Babylon.js
-Hosting: Vercel (free tier)
-Database: Supabase (optional, free tier)
-```
+Why test it:
 
----
+- Strong structure-from-motion and multi-view stereo pipeline.
+- Command-line friendly.
+- Useful for understanding the technical floor without relying on a black-box API.
 
-## 📦 Project Structure
+Risk:
 
-```
-build-my-paper-lamp/
-├── PROJECT_PLAN.md                 # This file
-├── TECHNICAL_SPEC.md              # Detailed technical specs
-├── README.md                       # User-facing readme
-├── package.json
-├── tsconfig.json
-├── next.config.js
-├── tailwind.config.js
-├── .env.example
-├── .env.local                      # API keys (gitignored)
-│
-├── public/
-│   ├── icons/
-│   └── images/
-│
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx             # Root layout
-│   │   ├── page.tsx               # Landing page /
-│   │   ├── capture/
-│   │   │   └── page.tsx           # Capture page /capture
-│   │   ├── processing/
-│   │   │   └── page.tsx           # Processing /processing
-│   │   ├── results/
-│   │   │   └── page.tsx           # Results /results
-│   │   └── api/
-│   │       ├── upload/route.ts    # POST /api/upload
-│   │       ├── process/route.ts   # POST /api/process
-│   │       ├── status/route.ts    # GET /api/status?jobId=...
-│   │       └── download/route.ts  # GET /api/download?jobId=...
-│   │
-│   ├── components/
-│   │   ├── Camera.tsx             # Camera capture component
-│   │   ├── PhotoGallery.tsx       # Display taken photos
-│   │   ├── ModelViewer.tsx        # 3D model preview (Three.js)
-│   │   ├── VectorPreview.tsx      # SVG preview component
-│   │   ├── Header.tsx
-│   │   ├── Footer.tsx
-│   │   └── ui/                    # Shadcn components
-│   │
-│   ├── lib/
-│   │   ├── api-client.ts          # API wrapper functions
-│   │   ├── kiri-engine.ts         # KIRI Engine integration
-│   │   ├── sketch-edge.ts         # SketchEdge integration
-│   │   ├── storage.ts             # LocalStorage utilities
-│   │   ├── svg-utils.ts           # SVG processing helpers
-│   │   └── constants.ts           # App-wide constants
-│   │
-│   ├── hooks/
-│   │   ├── useCamera.ts           # Camera capture hook
-│   │   ├── useJob.ts              # Job status hook
-│   │   └── useLocalStorage.ts     # Storage hook
-│   │
-│   ├── types/
-│   │   └── index.ts               # TypeScript types & interfaces
-│   │
-│   └── utils/
-│       ├── validation.ts          # Input validation
-│       ├── file-handling.ts       # File utilities
-│       └── error-handling.ts      # Error utilities
-│
-├── tests/
-│   ├── components/
-│   ├── api/
-│   └── utils/
-│
-└── docs/
-    ├── API.md                     # API documentation
-    ├── DEPLOYMENT.md              # Vercel deployment steps
-    └── TROUBLESHOOTING.md         # Common issues & fixes
+- Requires good input photos and may need careful environment setup.
+- Mesh cleanup may still require additional tools.
+
+#### Meshroom / AliceVision
+
+Use Meshroom as an open-source photogrammetry comparison point.
+
+Why test it:
+
+- Good for visual debugging.
+- Mature photogrammetry workflow.
+- Useful when COLMAP setup or results are difficult to interpret.
+
+Risk:
+
+- May be heavier to run locally.
+- Automation may be less straightforward depending on the workflow.
+
+#### Cloud Or API Image-To-3D Tools
+
+Use one or two cloud/API tools only if they accelerate proof of concept and return downloadable meshes.
+
+Why test them:
+
+- Faster validation.
+- May produce better meshes from imperfect input.
+
+Risk:
+
+- Cost, rate limits, licensing, and black-box behavior.
+- Product dependency risk if the API changes or output quality is inconsistent.
+
+### 2D Conversion Candidates
+
+#### Blender Python Pipeline
+
+Use Blender as the main candidate for mesh cleanup, simplification, slicing, and export.
+
+Possible jobs:
+
+- Import reconstructed mesh.
+- Normalize scale and orientation.
+- Decimate or remesh.
+- Generate contour slices or planar ribs.
+- Export SVG, PDF, or DXF-friendly geometry.
+
+Why test it:
+
+- Scriptable.
+- Good long-term automation path.
+- Gives control over geometry decisions.
+
+#### Papercraft Unfold Pipeline
+
+Test whether simplified meshes can be unfolded into flat paper patterns.
+
+Why test it:
+
+- Directly maps a 3D surface into 2D pieces.
+- Good for faceted papercraft objects.
+
+Risk:
+
+- Organic meshes can create many tiny, ugly, or impossible pieces.
+- Assembly may be too complex for a friendly product.
+
+#### Custom Lamp Plane Pipeline
+
+Test an approach where the object is represented by interlocking vertical and horizontal contour planes instead of a fully unfolded surface.
+
+Why test it:
+
+- More reliable for laser cutting.
+- Easier to assemble.
+- Better suited to lamp aesthetics.
+- Can produce a recognizable silhouette without perfect surface reconstruction.
+
+This may be the strongest MVP direction.
+
+## Phase 1B: End-To-End Experiments
+
+### Experiment 1: Simple Object Reconstruction
+
+Use a matte, textured, easy object.
+
+Purpose:
+
+- Confirm that the reconstruction pipeline works.
+- Establish the baseline folder structure and output checklist.
+
+Expected output:
+
+- Mesh file
+- Screenshot or render
+- Notes on photo quality and reconstruction quality
+
+### Experiment 2: Recognizable Organic Object
+
+Use an object closer to the real product vision, such as a small animal figure or plush toy.
+
+Purpose:
+
+- Test recognizability.
+- Discover how much geometry detail is required.
+
+Expected output:
+
+- Mesh file
+- Simplified mesh
+- Notes on failure modes
+
+### Experiment 3: Printable Plane Strategy
+
+Take the best reconstructed mesh and generate printable 2D parts using at least two strategies:
+
+1. Vertical or radial contour slices.
+2. Horizontal contour slices.
+3. Optional interlocking slots.
+4. Optional unfolded surface pieces.
+
+Purpose:
+
+- Decide whether the product should use contour/rib construction or surface unfolding.
+
+Expected output:
+
+- SVG, PDF, or DXF cutting files
+- Rendered preview of assembled planes
+- Notes on material assumptions and slot tolerances
+
+### Experiment 4: Physical Or Rendered Validation
+
+Validate one complete result.
+
+Preferred:
+
+- Print or laser cut the parts.
+- Assemble the object.
+- Photograph it next to the source object.
+
+Fallback:
+
+- Render the generated planes in 3D and compare them to the input object.
+
+Purpose:
+
+- Prove that the generated planes form a recognizable 3D object.
+
+Expected output:
+
+- Final output image or render
+- Assembly notes
+- Final pass/fail assessment
+
+## Phase 1 Deliverables
+
+Create a proof-of-concept workspace like this:
+
+```text
+poc/
+  input/
+    object-name/
+      images/
+  output/
+    object-name/
+      reconstruction/
+      cleaned-mesh/
+      printable-planes/
+      renders/
+      assembly-notes.md
+  reports/
+    tool-test-matrix.md
+    poc-report.md
 ```
 
----
+The final Phase 1 report should answer:
 
-## 🔑 Key Features (MVP)
+- Which tools were tested?
+- Which tools produced usable output?
+- Which step is currently the weakest?
+- Can the process be repeated?
+- Does the output resemble the input object?
+- Is the lamp-plane concept more promising than full papercraft unfolding?
+- Should the project continue to UI development?
 
-### **Feature 1: Photo Capture**
-- User opens `/capture` page
-- Browser requests camera permission
-- Live camera preview shows
-- User taps photos (min 15, max 50)
-- Photos stored locally (IndexedDB)
-- Progress indicator (X/15 photos)
-- Continue button only enabled after 15 photos
+## Phase 1 Decision Gate
 
-### **Feature 2: Upload & Processing**
-- User taps "Process"
-- Photos uploaded to `/api/upload`
-- Backend queues job (KIRI Engine + SketchEdge)
-- Frontend polls `/api/status?jobId=...` every 2 seconds
-- Shows real-time status: "Uploading… Processing 3D… Extracting Vector… Done"
-- Estimated time remaining based on typical processing (2-3 min)
+Move to Phase 2 only if this statement is true:
 
-### **Feature 3: Results Display**
-- 3D model preview (Three.js canvas)
-- Vector outline preview (SVG embedded)
-- Download SVG button
-- SVG optimized for laser cutting (correct scale, clean paths)
-- Copy SVG code button
+> We can reliably convert at least one photographed object into printable 2D parts that form a recognizable 3D object.
 
-### **Feature 4: Error Handling**
-- Camera permission denied → show fallback (upload images)
-- API failure → show error + retry button
-- Invalid photos (blurry, wrong angle) → warning + tip
-- Network timeout → allow resume from last successful step
+If this is not true, do not build the UI yet. Instead, choose one of these actions:
 
----
+- Improve the reconstruction pipeline.
+- Reduce the supported object types.
+- Switch from photo-to-3D to a semi-manual design workflow.
+- Change the output format from unfolded paper model to contour/rib lamp structure.
+- Reframe the product around curated templates rather than arbitrary objects.
 
-## 📊 API Specifications
+## Phase 2: Product Interface
 
-### **POST /api/upload**
-Upload photos for processing
-```
-Request:
-  - formData with multiple files (photos)
-  - metadata: object_name, description (optional)
+### Goal
 
-Response:
-  {
-    jobId: "uuid",
-    status: "uploaded",
-    photoCount: 42,
-    estimatedTime: 180 // seconds
-  }
-```
+Build the user-facing app only after the technical transformation has been proven.
 
-### **POST /api/process**
-Start 3D scanning + vector extraction
-```
-Request:
-  {
-    jobId: "uuid"
-  }
+### Scope
 
-Response:
-  {
-    jobId: "uuid",
-    status: "processing",
-    step: "3d_scanning", // or "vector_extraction"
-    progress: 45
-  }
-```
+- Photo upload or camera capture
+- Input quality checklist
+- Processing status
+- 3D preview
+- 2D cut-sheet preview
+- Download SVG, PDF, or DXF
+- Basic project history
+- Clear error states when the input photos are not usable
 
-### **GET /api/status?jobId=...**
-Poll job status
-```
-Response:
-  {
-    jobId: "uuid",
-    status: "completed", // or "processing" / "failed"
-    step: "vector_extraction",
-    progress: 100,
-    results: {
-      modelUrl: "...", // 3D model GLB
-      svgUrl: "...",   // Vector outline SVG
-      rawSvg: "..." // SVG source code
-    }
-  }
-```
+### Still Out Of Scope
 
-### **GET /api/download?jobId=...**
-Download SVG file
-```
-Returns: SVG file (application/svg+xml)
-```
-
----
-
-## 🚀 Deployment & Delivery
-
-### **Vercel Setup**
-1. Connect GitHub repo to Vercel
-2. Set environment variables:
-   - `KIRI_ENGINE_API_KEY`
-   - `SKETCH_EDGE_API_KEY`
-   - `NEXT_PUBLIC_API_URL` (Vercel URL)
-
-3. Deploy on each push to `main`
-4. Live URL: `https://build-my-paper-lamp.vercel.app`
-
-### **Database (Optional for MVP)**
-- Use Supabase (free tier) for storing jobs + user designs
-- Tables:
-  - `jobs` (jobId, userId, status, results, createdAt)
-  - `designs` (designId, userId, name, svgUrl, createdAt)
-
----
-
-## 📝 Success Metrics (MVP)
-
-| Metric | Target |
-|--------|--------|
-| Capture photos | <5 min for 25 photos |
-| Upload time | <30 sec (25 photos, 5MB) |
-| Processing time | <3 min (3D + vector) |
-| Total time (start→download) | <10 min |
-| Mobile responsiveness | Works on iPhone SE + Android |
-| SVG quality | Suitable for 40W laser cutter |
-| Error recovery | User can retry failed step |
-| Uptime | 99% (no hard failures) |
-
----
-
-## 🔗 External Dependencies
-
-| Service | Purpose | Cost | Status |
-|---------|---------|------|--------|
-| KIRI Engine API | 3D scanning from photos | Free tier available | ✅ Active |
-| SketchEdge | Vector outline extraction | Free tier available | ✅ Active |
-| Vercel | Hosting + deployment | Free tier sufficient | ✅ Active |
-| Supabase | Database (optional) | Free tier | ✅ Optional |
-| Three.js | 3D viewer | Free (open source) | ✅ Active |
-
----
-
-## 📚 Implementation Resources
-
-- **KIRI Engine Docs:** https://www.kiriengine.app/
-- **SketchEdge API:** https://sketchedge.net/en
-- **Next.js Documentation:** https://nextjs.org/docs
-- **Shadcn/ui Components:** https://ui.shadcn.com
-- **Three.js Guide:** https://threejs.org/docs/
-- **Vercel Deployment:** https://vercel.com/docs
-
----
-
-## ✅ Acceptance Criteria
-
-### **Minimum Viable Product (MVP)**
-- [ ] User can open app on phone
-- [ ] Camera capture works (iOS + Android)
-- [ ] Photos upload successfully
-- [ ] Backend processes photos via KIRI Engine
-- [ ] SketchEdge generates vector outline
-- [ ] SVG preview displays correctly
-- [ ] User can download SVG file
-- [ ] SVG is compatible with laser cutters (Inkscape validation)
-- [ ] App handles errors gracefully
-- [ ] Mobile UI is responsive and touch-friendly
-
-### **Nice-to-Have (Phase 2)**
-- 3D model viewer (rotate, zoom)
-- Vector outline customization
-- Batch processing
-- Design history/saved projects
+- Payments
+- Marketplace
 - Social sharing
+- Advanced editing
+- Multi-user collaboration
+- E-commerce fulfillment
 
----
+### Success Criteria
 
-## 👥 Team Roles
+- A user can complete the flow without developer help.
+- Bad inputs produce understandable feedback.
+- Output files are printable or laser-cutter-ready.
+- The app exposes the proven pipeline rather than pretending unfinished steps work.
 
-| Role | Responsibility |
-|------|-----------------|
-| **Frontend Engineer** | Build React UI, camera integration, 3D viewer |
-| **Backend Engineer** | API routes, file handling, API orchestration |
-| **DevOps** | Vercel deployment, monitoring, scaling |
-| **PM** (You) | Project oversight, stakeholder communication |
+## Phase 3: Productization And Marketing
 
----
+### Goal
 
-## 📞 Contacts & Support
+Turn the proven workflow into a product people can understand, trust, and share.
 
-- **KIRI Engine Support:** https://www.kiriengine.app/
-- **SketchEdge Support:** https://sketchedge.net/en
-- **Vercel Support:** https://vercel.com/support
-- **Tech Questions:** Ask Claude Code agent
+### Positioning Options
 
----
+- DIY paper lamp maker
+- Custom laser-cut craft generator
+- Photo-to-papercraft tool
+- Maker or STEM classroom activity
+- Etsy-adjacent custom craft product
+- Personalized gift design tool
 
-## 📄 Document Checklist
+### Marketing Channels
 
-- [x] PROJECT_PLAN.md (this file)
-- [ ] TECHNICAL_SPEC.md (detailed API specs, error codes)
-- [ ] README.md (user-facing guide)
-- [ ] API_DOCUMENTATION.md (endpoint details)
-- [ ] DEPLOYMENT.md (Vercel setup instructions)
-- [ ] TROUBLESHOOTING.md (common issues)
+- Short-form build videos on TikTok, Instagram, and YouTube Shorts
+- Maker communities
+- Laser cutting communities
+- Etsy seller communities
+- Schools, workshops, and STEM programs
+- Local fabrication labs
+- Product Hunt after the demo is visually strong
 
----
+### Marketing Proof Needed
 
-**Last Updated:** April 22, 2026  
-**Status:** Ready for Development  
-**Next Step:** Start Phase 1, Week 1 implementation in Claude Code
+- Before/after photos
+- Short video: photos -> generated sheets -> cutting -> assembly -> glowing lamp
+- 3 to 5 strong example objects
+- Clear explanation of what object types work well
+- Honest examples of what does not work yet
+
+## Recommended Next Milestone
+
+Produce one complete proof-of-concept folder containing:
+
+- Input photos
+- Reconstructed mesh
+- Generated 2D printable planes
+- Rendered or physical assembled result
+- Short report explaining whether the result is good enough to justify UI development
+
+This is the truth test for the project. Once it works, the app can be built around a real pipeline instead of hope.
