@@ -14,21 +14,21 @@ The Phase 1 workspace has been created under `poc/`.
 
 Initial tool availability:
 
-- COLMAP is not installed.
+- COLMAP is installed and verified in the `paperlamp-poc` Conda environment.
 - Blender is not installed.
 - Meshroom/AliceVision is not installed.
 - MeshLab server is not installed.
 - OpenSCAD is not installed.
 - Conda is available.
-- Anaconda Python is available.
-- NumPy, scikit-image, SciPy, and Matplotlib are available.
-- Mesh-focused Python packages such as `trimesh`, `open3d`, `pycolmap`, and `shapely` are not installed in the base Anaconda environment.
+- POC Python is available at `/opt/anaconda3/envs/paperlamp-poc/bin/python`.
+- pycolmap, trimesh, shapely, NumPy, scikit-image, SciPy, and Matplotlib are available and import successfully in `paperlamp-poc`.
+- Open3D was installed during setup but failed import because of a TBB/Embree dynamic library mismatch. It was removed because it is not needed for the first proof.
 
 Implication:
 
 - We can organize inputs and reports now.
-- We cannot run the first reconstruction locally until at least one reconstruction path is installed or an API/cloud path is selected.
-- We cannot generate robust mesh-to-plane output locally until Blender or equivalent geometry libraries are available.
+- We can run the first reconstruction locally with COLMAP after input photos are added.
+- We can begin mesh-to-plane experiments with `trimesh` and `shapely` before adding Blender.
 
 ## Phase Gate
 
@@ -119,9 +119,8 @@ Result:
 
 ## Next Actions
 
-1. Install or provide a reconstruction tool. Preferred first path: COLMAP.
-2. Install or provide a mesh conversion tool. Preferred first path: Blender Python or a Python mesh stack with `trimesh` and `shapely`.
-3. Choose the first simple matte object.
-4. Capture 30 to 60 photos into `poc/input/simple-matte-object/images/`.
-5. Run the first reconstruction attempt.
-6. Record outputs and failures in this report.
+1. Choose the first simple matte object.
+2. Capture 30 to 60 photos into `poc/input/simple-matte-object/images/`.
+3. Run the first reconstruction attempt with `poc/scripts/run-colmap-auto.sh`.
+4. Record outputs and failures in this report.
+5. Begin mesh-to-plane experiments using `trimesh` and `shapely`.

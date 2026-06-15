@@ -18,7 +18,7 @@ If this cannot be proven with raw tools and scripts, adding a polished interface
 
 ### Current Status
 
-Status as of 2026-06-15: **Started**
+Status as of 2026-06-15: **Started; local POC toolchain installed**
 
 What exists now:
 
@@ -26,30 +26,34 @@ What exists now:
 - Report template created at `poc/reports/poc-report.md`.
 - Tool matrix created at `poc/reports/tool-test-matrix.md`.
 - Repeatable local tool check created at `poc/scripts/check-tools.sh`.
+- POC Conda environment created as `paperlamp-poc`.
+- Reproducible environment file created at `poc/environment.yml`.
+- COLMAP automatic reconstruction wrapper created at `poc/scripts/run-colmap-auto.sh`.
 
 Initial findings:
 
-- COLMAP is not installed locally.
+- COLMAP 3.11.1 is installed and verified in `paperlamp-poc`.
 - Blender is not installed locally.
 - Meshroom/AliceVision is not installed locally.
 - MeshLab server is not installed locally.
 - OpenSCAD is not installed locally.
 - Conda is available.
-- Anaconda Python is available.
-- NumPy, scikit-image, SciPy, and Matplotlib are available.
-- Mesh-focused Python packages such as `trimesh`, `open3d`, `pycolmap`, and `shapely` are not installed in the base Anaconda environment.
+- POC Python is available at `/opt/anaconda3/envs/paperlamp-poc/bin/python`.
+- pycolmap 3.11.1 is installed and verified.
+- trimesh, shapely, NumPy, scikit-image, SciPy, and Matplotlib are installed and verified.
+- Open3D was tried, failed import due to a TBB/Embree dynamic library mismatch, and was removed.
 
 Immediate blocker:
 
-- The first reconstruction cannot run locally until a reconstruction tool is installed or a cloud/API path with downloadable mesh output is selected.
-- The first robust mesh-to-plane conversion cannot run locally until Blender or equivalent mesh-processing libraries are installed.
+- The first reconstruction is now blocked only on adding a real input image set.
+- The first robust mesh-to-plane conversion may be possible with `trimesh` and `shapely`; Blender remains deferred unless the Python stack is insufficient.
 
 Next action:
 
-1. Install or provide a reconstruction path, with COLMAP as the preferred local baseline.
-2. Install or provide a mesh conversion path, with Blender Python or a Python mesh stack as the preferred path.
-3. Capture 30 to 60 photos of a simple matte object into `poc/input/simple-matte-object/images/`.
-4. Run Experiment 1 and record the output in `poc/reports/poc-report.md`.
+1. Capture 30 to 60 photos of a simple matte object into `poc/input/simple-matte-object/images/`.
+2. Run Experiment 1 with `poc/scripts/run-colmap-auto.sh`.
+3. Record the reconstruction output in `poc/reports/poc-report.md`.
+4. Start mesh-to-plane experiments with `trimesh` and `shapely`.
 
 ### Goal
 

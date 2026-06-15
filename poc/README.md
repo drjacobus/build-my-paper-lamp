@@ -59,3 +59,27 @@ Recommended image capture:
 - Object fills most of the frame
 - Plain but textured background
 - Avoid motion blur
+
+## Local Toolchain
+
+The Phase 1 Conda environment is named `paperlamp-poc`.
+
+Create or recreate it with:
+
+```bash
+/opt/anaconda3/bin/conda env create --override-channels -c conda-forge -f poc/environment.yml
+```
+
+Check installed tools with:
+
+```bash
+poc/scripts/check-tools.sh
+```
+
+Run the first COLMAP automatic reconstruction attempt with:
+
+```bash
+poc/scripts/run-colmap-auto.sh \
+  poc/input/simple-matte-object/images \
+  poc/output/simple-matte-object/reconstruction/colmap-auto
+```
