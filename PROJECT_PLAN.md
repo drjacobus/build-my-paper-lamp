@@ -108,6 +108,7 @@ Initial findings:
   - watertight OBJ mesh with 7468 vertices and 14,940 faces;
   - 300-face faceted shell remains watertight;
   - connected net export with 21 islands and 131 glue tabs.
+- Manifest-based turntable input was added so future app-style captures can provide arbitrary image filenames plus approximate `azimuth` and `elevation` values.
 
 Current conclusion:
 
@@ -119,6 +120,7 @@ Current conclusion:
 - COLMAP can recover partial sparse Bunny geometry from rendered images, especially with fixed camera assumptions and relaxed mapper thresholds, but this is not enough by itself because the product needs a usable mesh, not just camera poses and sparse points.
 - Local COLMAP should now be treated as a diagnostic/camera-recovery baseline, not a satisfying Phase 1A image-to-mesh solution.
 - The first viable non-Tripo solution is controlled capture plus silhouette visual hull. It is not arbitrary photo reconstruction, but it gives a practical product constraint: guide the user to capture the object like a turntable scan on a clean background.
+- AI should be treated as an assistant to this geometry-first route, not as the primary source of truth. Good candidate uses are object masking, background cleanup, capture quality checks, rough angle estimation, and optional semantic hints; generated mesh details must still be checked against the input silhouettes.
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 
 Next action:
@@ -126,8 +128,9 @@ Next action:
 1. Promote controlled turntable visual hull to the primary Phase 1A solution path.
 2. Define the app capture requirement around 10 to 15 clean same-object images from different angles, preferably on a white or high-contrast background.
 3. Validate the route on a real captured object with phone images, clean background, and turntable-style coverage.
-4. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
-5. Only research non-Tripo image-to-3D APIs or models if they return downloadable meshes and can beat the controlled visual-hull baseline.
+4. Add AI assistance only where it improves the geometry-first pipeline: better masks, bad-frame rejection, angle estimation, and capture guidance.
+5. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
+6. Only research non-Tripo image-to-3D APIs or models if they return downloadable meshes and can beat the controlled visual-hull baseline.
 
 ### Goal
 

@@ -30,6 +30,7 @@ Current best technical result:
 - A non-Tripo controlled turntable visual-hull route now converts Bunny images into a usable watertight mesh.
 - The full 48-image Bunny capture produced a watertight mesh, a 300-face watertight shell, and a connected SVG net with 22 islands and 129 glue tabs.
 - A reduced 12-image Bunny subset, matching the intended app input count, also produced a watertight mesh, a 300-face watertight shell, and a connected SVG net with 21 islands and 131 glue tabs.
+- Manifest-based input was added so the same path can accept arbitrary app-style image filenames plus approximate azimuth/elevation values.
 - This should be treated as a pass only under explicit capture constraints: same object, centered, clean/white background, enough silhouette coverage, and known or estimated viewing angles.
 
 ## Setup Findings
@@ -552,6 +553,7 @@ Input object:
 - Stanford Bunny rendered turntable views.
 - Full test: 48 images from two elevation rings.
 - Reduced app-like test: 12 images from two elevation rings.
+- Manifest test: same 12 images described by `poc/input/stanford-bunny/turntable-12-view-manifest.csv`.
 
 Commands:
 
@@ -592,6 +594,17 @@ Commands:
   --max-faces-per-island 24
 ```
 
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/build-turntable-visual-hull.py \
+  --image-dir poc/input/stanford-bunny \
+  --view-manifest poc/input/stanford-bunny/turntable-12-view-manifest.csv \
+  --output-dir poc/output/stanford-bunny/reconstruction/turntable-visual-hull-12views-manifest \
+  --name-prefix stanford-bunny-12view-manifest \
+  --resolution 96 \
+  --min-consensus 0.90 \
+  --mask-threshold 18
+```
+
 Measured result:
 
 - 48-image visual hull:
@@ -607,6 +620,12 @@ Measured result:
   - 300 target faces -> 300 faces, 152 vertices, watertight;
   - 600 and 1200 face variants generated but not watertight after simplification;
   - connected net export with 21 islands and 131 glue tabs.
+- Manifest-driven 12-image run:
+  - same 24,085 occupied voxels out of 884,736 after cleanup;
+  - same OBJ mesh size: 7468 vertices and 14,940 faces;
+  - watertight mesh;
+  - 300 target faces -> 300 faces, 152 vertices, watertight;
+  - connected net export with 21 islands and 131 glue tabs.
 
 Interpretation:
 
@@ -614,6 +633,7 @@ Interpretation:
 - The app should ask for roughly 10 to 15 images from different angles of the same object, ideally against a white or high-contrast background.
 - This does not prove arbitrary-photo reconstruction. It proves a guided capture flow can make the problem tractable.
 - The 300-face shell is currently the safest paperlamp candidate because it stayed watertight on the 12-image test.
+- AI makes sense as an assistant layer for segmentation, background cleanup, rough angle estimation, bad-frame rejection, and semantic hints. It should not be trusted to invent final geometry unless the result still passes silhouette/geometry checks.
 
 ### Experiment 12: User-Captured Recognizable Organic Object
 
@@ -673,11 +693,13 @@ Result:
 - Dense reconstruction may require additional COLMAP steps, Blender, Meshroom/AliceVision, or a custom silhouette/visual-hull path.
 - Public benchmark success may not transfer directly to casual phone photos; the app should constrain capture instead of accepting arbitrary uploads.
 - Image-conditioned mesh APIs may hallucinate shape detail. A text prompt can help semantic features, but it cannot replace geometric evidence.
+- AI segmentation or capture guidance could improve the visual-hull route, but AI-generated geometry can drift away from the user's actual object.
 
 ## Next Actions
 
 1. Promote controlled turntable visual hull as the primary non-Tripo image-to-mesh route.
 2. Test the same route on one real phone-captured object with 10 to 15 images and a clean background.
 3. Improve capture guidance assumptions: object centered, same distance, full 360-degree coverage, high contrast background, minimal shadows.
-4. Improve connected-net page layout, fold/cut styling, and assembly order after the real-capture test.
-5. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.
+4. Prototype AI-assisted masks or capture quality checks only after the real-capture baseline is measured.
+5. Improve connected-net page layout, fold/cut styling, and assembly order after the real-capture test.
+6. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.

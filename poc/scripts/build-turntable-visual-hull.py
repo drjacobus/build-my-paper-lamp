@@ -3,12 +3,18 @@
 
 This is a Phase 1A image-to-mesh candidate. It assumes a controlled capture:
 the object stays centered, the camera/object rotates around the vertical axis,
-and filenames follow `view_e+14_000.png` from `render-mesh-views.py`.
+and each image has an approximate azimuth/elevation angle.
+
+The script can either infer angles from benchmark filenames such as
+`view_e+14_000.png`, or read a CSV manifest with:
+
+    image,azimuth,elevation
 """
 
 from __future__ import annotations
 
 import argparse
+import csv
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,7 +36,59 @@ class TurntableView:
     azimuth: float
 
 
-def discover_views(image_dir: Path, views_per_elevation: int | None) -> list[TurntableView]:
+def resolve_manifest_image(image_dir: Path, manifest_path: Path, image_value: str) -> Path:
+    image_path = Path(image_value)
+    if image_path.is_absolute():
+        return image_path
+
+    image_dir_candidate = image_dir / image_path
+    if image_dir_candidate.exists():
+        return image_dir_candidate
+
+    return manifest_path.parent / image_path
+
+
+def load_manifest(image_dir: Path, manifest_path: Path) -> list[TurntableView]:
+    views: list[TurntableView] = []
+    with manifest_path.open(newline="") as file:
+        reader = csv.DictReader(file)
+        required_fields = {"image", "azimuth"}
+        if not reader.fieldnames or not required_fields.issubset(reader.fieldnames):
+            raise RuntimeError(f"{manifest_path} must contain at least image and azimuth columns")
+
+        for index, row in enumerate(reader):
+            image_value = (row.get("image") or "").strip()
+            azimuth_value = (row.get("azimuth") or "").strip()
+            elevation_value = (row.get("elevation") or "0").strip() or "0"
+            if not image_value or not azimuth_value:
+                raise RuntimeError(f"{manifest_path} row {index + 2} is missing image or azimuth")
+
+            image_path = resolve_manifest_image(image_dir, manifest_path, image_value)
+            if not image_path.exists():
+                raise RuntimeError(f"{manifest_path} row {index + 2} image does not exist: {image_path}")
+
+            views.append(
+                TurntableView(
+                    path=image_path,
+                    elevation=float(elevation_value),
+                    index=index,
+                    azimuth=float(azimuth_value),
+                )
+            )
+
+    if not views:
+        raise RuntimeError(f"No turntable views found in {manifest_path}")
+    return views
+
+
+def discover_views(
+    image_dir: Path,
+    views_per_elevation: int | None,
+    manifest_path: Path | None,
+) -> list[TurntableView]:
+    if manifest_path is not None:
+        return load_manifest(image_dir, manifest_path)
+
     grouped: dict[int, list[tuple[int, Path]]] = {}
     for path in sorted(image_dir.glob("view_e*.png")):
         match = VIEW_RE.match(path.name)
@@ -132,6 +190,7 @@ def write_obj(path: Path, vertices: np.ndarray, faces: np.ndarray) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--image-dir", type=Path, required=True)
+    parser.add_argument("--view-manifest", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--name-prefix", default="turntable")
     parser.add_argument("--resolution", type=int, default=96)
@@ -144,7 +203,7 @@ def main() -> None:
     parser.add_argument("--no-clean", action="store_true")
     args = parser.parse_args()
 
-    views = discover_views(args.image_dir, args.views_per_elevation)
+    views = discover_views(args.image_dir, args.views_per_elevation, args.view_manifest)
     axes = [np.linspace(-args.grid_bound, args.grid_bound, args.resolution) for _ in range(3)]
     grid = np.stack(np.meshgrid(*axes, indexing="ij"), axis=-1)
     points = grid.reshape(-1, 3)

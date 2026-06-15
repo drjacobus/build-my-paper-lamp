@@ -37,9 +37,10 @@ Each tool or pipeline must be evaluated against the same checklist:
 | Tool | Local availability | Input tested | Mesh output | Automation path | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | COLMAP | Installed in `paperlamp-poc` | Tiny NeRF Lego, Middlebury DinoRing, Stanford Bunny rendered views | Sparse reconstruction plus failed sparse mesh attempt | CLI | Diagnostic only for now | Tiny NeRF failed to produce useful sparse geometry. Calibrated DinoRing produced two sparse models covering 47 of 48 images. Bunny rendered views improved to 43/48 registered images and 2139 sparse points with fixed intrinsics plus relaxed mapper settings. Sparse Delaunay meshing produced an unusable spike-like mesh; Poisson failed because sparse PLY lacks normals. Dense stereo failed locally because this COLMAP build requires CUDA. |
-| Controlled turntable visual hull | Implemented as `build-turntable-visual-hull.py` | Stanford Bunny rendered turntable views, including a 12-image subset | Watertight OBJ mesh | Fully scriptable | Constrained Phase 1A pass | Assumes same object, centered capture, clean/white background, and known or estimated turntable angles. The 12-image subset produced a watertight mesh, a watertight 300-face shell, and a connected SVG net. This is the current non-Tripo solution path. |
+| Controlled turntable visual hull | Implemented as `build-turntable-visual-hull.py` | Stanford Bunny rendered turntable views, including a 12-image subset | Watertight OBJ mesh | Fully scriptable | Constrained Phase 1A pass | Assumes same object, centered capture, clean/white background, and known or estimated turntable angles. The 12-image subset produced a watertight mesh, a watertight 300-face shell, and a connected SVG net. CSV manifest input now supports arbitrary app-style image filenames plus azimuth/elevation. This is the current non-Tripo solution path. |
 | Meshroom / AliceVision | Missing | Not tested | Not tested | CLI/GUI mixed | Blocked until installed | Useful comparison if available. |
 | Cloud/API image-to-3D | Existing repo client stub for Tripo; Tripo rejected after prior user trial | Not tested further in current POC | Not tested | API-dependent | Deferred | Only useful if it returns downloadable meshes and beats the controlled visual-hull baseline. Text descriptions may help semantic shape, but outputs must be checked for hallucinated geometry. |
+| AI-assisted capture/masking | Not implemented yet | Not tested | N/A | API/model-dependent | Candidate assistant, not core geometry | Useful roles: segmentation masks, background cleanup, angle estimation, bad-frame rejection, capture guidance, and semantic hints such as preserving dinosaur spikes. Risk: hallucinated geometry if AI-generated meshes are trusted directly. |
 
 ## Mesh Cleanup And 2D Conversion Tools
 
@@ -209,4 +210,5 @@ Each tool or pipeline must be evaluated against the same checklist:
   - watertight OBJ mesh with 7468 vertices and 14,940 faces;
   - 300-face shell remains watertight;
   - connected net export with 21 islands and 131 glue tabs.
+- Added CSV manifest input for app-style captures. The manifest-driven 12-image run matched the previous result exactly and produced the same watertight mesh, 300-face watertight shell, and connected net.
 - Conclusion: this is the first non-Tripo route that meets the raw technical requirement under explicit capture constraints: controlled images in, mesh out, faceted shell out, connected printable SVG net out.

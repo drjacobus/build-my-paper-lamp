@@ -56,12 +56,13 @@ Recommended object traits:
 
 Recommended image capture:
 
-- 30 to 60 photos
-- Two height rings: low angle and slightly above
+- 10 to 15 photos for the current guided visual-hull path
+- Two height rings if possible: low angle and slightly above
 - Consistent lighting
 - Object fills most of the frame
-- Plain but textured background
+- White or high-contrast background
 - Avoid motion blur
+- Use 20 to 60 photos only when testing photogrammetry-style tools such as COLMAP.
 
 ## Local Toolchain
 
@@ -188,3 +189,26 @@ Export a first connected Bunny net with glue tabs:
 ```
 
 This produces connected triangle islands with matching edge labels and one simple tab per shared cut edge. It is still a raw proof artifact, not final printable product art.
+
+Run the current controlled turntable visual-hull path from app-style manifest input:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/build-turntable-visual-hull.py \
+  --image-dir poc/input/stanford-bunny \
+  --view-manifest poc/input/stanford-bunny/turntable-12-view-manifest.csv \
+  --output-dir poc/output/stanford-bunny/reconstruction/turntable-visual-hull-12views-manifest \
+  --name-prefix stanford-bunny-12view-manifest \
+  --resolution 96 \
+  --min-consensus 0.90 \
+  --mask-threshold 18
+```
+
+The manifest format is:
+
+```csv
+image,azimuth,elevation
+images-12-turntable/view_e+14_000.png,0,14
+images-12-turntable/view_e+14_004.png,60,14
+```
+
+For the future app, AI should assist this geometry-first path rather than replace it. The most useful AI jobs are object masking, background cleanup, bad-photo rejection, rough angle estimation, and capture guidance.
