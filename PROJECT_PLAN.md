@@ -167,18 +167,41 @@ Current conclusion:
 - Object choice matters: solid silhouette-driven forms are good early targets; handles, holes, loops, thin parts, and concavities are weak targets for visual hull and should be filtered out or handled by a later method.
 - Real phone photos need robust AI segmentation plus capture constraints. Simple color/brightness masking is not reliable for glossy dark objects in cluttered backgrounds. The Jagermeister bottle passed only after proper AI segmentation.
 
+MVP app status as of 2026-06-16:
+
+- The first tester app runs locally on the MacBook through `npm run dev:mac`.
+- The active product direction is local MacBook hosting for now, not Render/Vercel cloud processing.
+- iPhone camera capture requires HTTPS; the current documented option is a localtunnel-based tunnel in `HTTPS_CAMERA_SETUP.md`.
+- The app has a split workflow:
+  - capture or choose photos;
+  - upload and AI-segment first;
+  - review the segmentation contact sheet;
+  - choose complexity and template style;
+  - generate the 3D model and SVG;
+  - inspect the 3D preview and download the SVG.
+- Template style now supports:
+  - plain SVG for easiest cutting and assembly;
+  - colored SVG with approximate sampled face colors.
+- Capture order is now treated as a product constraint:
+  - direct capture follows a 12-slot angle guide;
+  - uploaded photo thumbnails can be rearranged before segmentation;
+  - each thumbnail shows its slot label so the user can correct library upload order.
+- The ordering and colored SVG controls are MVP-level features. They are good enough for testing, but need further UX and output-quality refinement before a commercial kit workflow.
+
 Next action:
 
-1. Promote controlled turntable visual hull to the primary Phase 1A solution path.
-2. Define the app capture requirement around 10 to 15 clean same-object images from different angles, preferably on a white or high-contrast background.
-3. Test the next public physical-object benchmark in this order:
-   - THU-MVS Cat/Dog first, because it is the closest match: turntable-like physical figurines with many views and recognizable animal shapes.
-   - Washington RGB-D Object Dataset second, because it offers many centered household objects and turntable videos for generalization.
-   - BigBIRD third, because it has turntable positions and masks but less paperlamp-like grocery/product objects.
-4. Treat AI segmentation as part of the baseline real-photo pipeline, not an optional polish step.
-5. Add the next AI assists around bad-frame rejection, angle estimation, and capture guidance.
-6. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
-7. Only research non-Tripo image-to-3D APIs or models if they return downloadable meshes and can beat the controlled visual-hull baseline.
+1. Pause feature expansion until the current capture/order/color MVP is tested from the phone.
+2. Use the next real object test to validate:
+   - photo capture or photo library upload;
+   - order correction before segmentation;
+   - segmentation contact sheet quality;
+   - plain versus colored SVG output;
+   - recognizability of the 3D preview.
+3. Improve only the weakest observed step from that test before adding new features.
+4. Keep controlled turntable visual hull as the primary Phase 1A solution path.
+5. Treat AI segmentation as part of the baseline real-photo pipeline, not optional polish.
+6. Add later AI assists around bad-frame rejection, angle estimation, and capture guidance only after the manual guided flow is stable.
+7. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
 
 ### Goal
 

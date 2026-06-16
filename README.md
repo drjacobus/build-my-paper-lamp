@@ -101,9 +101,10 @@ A web app that wraps the proven Phase 1 pipeline:
 - trimesh / scikit-image / shapely for geometry and SVG export
 
 **Hosting:**
-- Single Docker web service for the first cloud MVP
-- Persistent disk for uploaded photos and generated outputs
-- Render or Railway recommended first
+- Current tester MVP runs on the local MacBook
+- Generated jobs are stored under `~/.paperlamp/jobs`
+- HTTPS tunnel can be used for iPhone camera testing
+- Cloud hosting is deferred until the local workflow is stable
 
 ---
 
@@ -111,15 +112,15 @@ A web app that wraps the proven Phase 1 pipeline:
 
 ### For Users (App)
 
-1. Open the deployed tester link on your phone
+1. Open the local or HTTPS tester link on your phone
 2. Click **"Start Creating"**
-3. Allow camera permission
-4. Take **10-15 photos** of your object while walking around it once
-5. Click **"Process"**
-6. Wait while the cloud worker processes
-7. Download the **SVG file**
-8. Open in **Inkscape**, print as a cutting template, or send to a laser cutter
-9. Print, cut, glue, add light → **Done!** 🎉
+3. Allow camera permission, or choose photos from the library
+4. Take or select guided photos of your object while walking around it once
+5. Reorder thumbnails if the upload order is wrong
+6. Segment the photos and inspect the mask contact sheet
+7. Choose complexity and template style: **Plain** or **Colored**
+8. Generate the model and download the **SVG file**
+9. Open in **Inkscape**, print as a cutting template, or send to a laser cutter
 
 ### For Developers (Build from Source)
 
@@ -132,21 +133,14 @@ A web app that wraps the proven Phase 1 pipeline:
 
 ```bash
 # Clone the repo
-git clone https://github.com/apichecker1-max/build-my-paper-lamp.git
+git clone https://github.com/drjacobus/build-my-paper-lamp.git
 cd build-my-paper-lamp
 
 # Install dependencies
 npm install
 
-# Create environment file
-cp .env.example .env.local
-
-# Add your API keys
-# KIRI_ENGINE_API_KEY=...
-# SKETCH_EDGE_API_KEY=...
-
-# Start dev server
-npm run dev
+# Start the local MacBook tester
+npm run dev:mac
 
 # Open http://localhost:3000
 ```
@@ -160,28 +154,21 @@ npm run build
 # Test production build locally
 npm run start
 
-# Deploy the cloud MVP as a Docker app
-# See CLOUD_MVP.md
+# Cloud deployment is deferred.
+# See LOCAL_MACBOOK_MVP.md for the active tester setup.
 ```
 
 ---
 
 ## Documentation
 
-### For Users
-- **[Getting Started Guide](docs/GETTING_STARTED.md)** — Step-by-step tutorial
-- **[FAQ](docs/FAQ.md)** — Common questions
-- **[Tips & Tricks](docs/TIPS.md)** — Get better results
-
 ### For Developers
+- **[START_HERE.md](START_HERE.md)** — Current state and quick start
 - **[PROJECT_PLAN.md](PROJECT_PLAN.md)** — High-level project overview
 - **[LOCAL_MACBOOK_MVP.md](LOCAL_MACBOOK_MVP.md)** — Run the tester MVP from your MacBook
 - **[HTTPS_CAMERA_SETUP.md](HTTPS_CAMERA_SETUP.md)** — Use an HTTPS tunnel for phone camera capture
 - **[CLOUD_MVP.md](CLOUD_MVP.md)** — Single-container cloud MVP deployment
 - **[TECHNICAL_SPEC.md](TECHNICAL_SPEC.md)** — Detailed technical architecture
-- **[API_DOCUMENTATION.md](docs/API.md)** — Backend endpoint reference
-- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** — Legacy Vercel notes
-- **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** — Common issues & fixes
 
 ---
 

@@ -2,23 +2,8 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { CapturedPhoto } from '@/types'
+import { CAPTURE_GUIDE_STEPS, MAX_CAPTURE_PHOTOS } from '@/lib/captureGuide'
 import { v4 as uuidv4 } from 'uuid'
-
-const MAX_GUIDED_PHOTOS = 12
-const GUIDE_STEPS = [
-  'Front',
-  'Front right',
-  'Right side',
-  'Back right',
-  'Back',
-  'Back left',
-  'Left side',
-  'Front left',
-  'Slightly above front',
-  'Slightly above right',
-  'Slightly above back',
-  'Slightly above left',
-]
 
 interface Props {
   onPhotos: (photos: CapturedPhoto[]) => void
@@ -76,7 +61,7 @@ export default function Camera({ onPhotos, photos }: Props) {
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return
 
-    const remaining = Math.max(0, MAX_GUIDED_PHOTOS - photos.length)
+    const remaining = Math.max(0, MAX_CAPTURE_PHOTOS - photos.length)
     const selected = Array.from(files)
       .filter((file) => file.type.startsWith('image/'))
       .slice(0, remaining)
@@ -99,7 +84,7 @@ export default function Camera({ onPhotos, photos }: Props) {
       )
     )
 
-    onPhotos([...photos, ...loaded].slice(0, MAX_GUIDED_PHOTOS))
+    onPhotos([...photos, ...loaded].slice(0, MAX_CAPTURE_PHOTOS))
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -128,7 +113,7 @@ export default function Camera({ onPhotos, photos }: Props) {
       if (!blob) return
       const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
       const photo: CapturedPhoto = { id: uuidv4(), dataUrl, blob, timestamp: Date.now() }
-      onPhotos([...photos, photo].slice(0, MAX_GUIDED_PHOTOS))
+      onPhotos([...photos, photo].slice(0, MAX_CAPTURE_PHOTOS))
       // Haptic feedback
       if ('vibrate' in navigator) navigator.vibrate(50)
       setFlash(true)
@@ -155,7 +140,7 @@ export default function Camera({ onPhotos, photos }: Props) {
         <button
           type="button"
           onClick={choosePhotos}
-          disabled={photos.length >= MAX_GUIDED_PHOTOS}
+          disabled={photos.length >= MAX_CAPTURE_PHOTOS}
           className="bg-amber-500 text-white font-bold px-6 py-3 rounded-2xl shadow disabled:bg-amber-200 disabled:text-amber-400"
         >
           Choose Photos
@@ -164,9 +149,9 @@ export default function Camera({ onPhotos, photos }: Props) {
     )
   }
 
-  const currentStep = Math.min(photos.length, GUIDE_STEPS.length - 1)
-  const nextLabel = GUIDE_STEPS[currentStep]
-  const done = photos.length >= MAX_GUIDED_PHOTOS
+  const currentStep = Math.min(photos.length, CAPTURE_GUIDE_STEPS.length - 1)
+  const nextLabel = CAPTURE_GUIDE_STEPS[currentStep]
+  const done = photos.length >= MAX_CAPTURE_PHOTOS
 
   return (
     <div className="relative w-full">
@@ -183,16 +168,18 @@ export default function Camera({ onPhotos, photos }: Props) {
           <span className="text-xs font-semibold text-amber-600 uppercase tracking-wide">
             Guided capture
           </span>
-          <span className="text-xs text-amber-500">{photos.length} / {MAX_GUIDED_PHOTOS}</span>
+          <span className="text-xs text-amber-500">{photos.length} / {MAX_CAPTURE_PHOTOS}</span>
         </div>
-        <div className="text-lg font-bold text-amber-900">{done ? 'Capture complete' : nextLabel}</div>
+        <div className="text-lg font-bold text-amber-900">
+          {done ? 'Capture complete' : `Slot ${photos.length + 1}: ${nextLabel}`}
+        </div>
         <p className="text-xs text-amber-600 mt-1">
           {done
             ? 'Continue to segmentation when ready.'
-            : 'Keep the object centered and move one step around it before each shot.'}
+            : 'Take this angle next. The thumbnails below keep the same slot order.'}
         </p>
         <div className="grid grid-cols-12 gap-1 mt-3">
-          {GUIDE_STEPS.map((label, index) => (
+          {CAPTURE_GUIDE_STEPS.map((label, index) => (
             <div
               key={label}
               className={`h-2 rounded-full ${index < photos.length ? 'bg-amber-500' : index === photos.length ? 'bg-amber-300' : 'bg-amber-100'}`}
@@ -224,11 +211,11 @@ export default function Camera({ onPhotos, photos }: Props) {
         )}
         {/* Photo count badge */}
         <div className="absolute top-3 right-3 bg-black/60 text-white text-sm font-bold px-3 py-1 rounded-full">
-          {photos.length} / {MAX_GUIDED_PHOTOS}
+          {photos.length} / {MAX_CAPTURE_PHOTOS}
         </div>
         {!done && (
           <div className="absolute left-3 bottom-3 right-3 bg-black/60 text-white text-sm font-semibold px-3 py-2 rounded-xl text-center">
-            Next: {nextLabel}
+            Next slot: {photos.length + 1} · {nextLabel}
           </div>
         )}
         {/* Crosshair guide */}

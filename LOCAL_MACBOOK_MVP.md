@@ -70,13 +70,40 @@ Uploaded images and generated results are stored under:
 
 Delete old test jobs from that folder when disk usage grows.
 
+## Current App Flow
+
+1. Open the capture screen.
+2. Take guided photos directly over HTTPS, or choose existing photos from the library.
+3. Keep the photos in one smooth rotation order. The current capture guide uses 12 slots:
+   - front;
+   - front right;
+   - right side;
+   - back right;
+   - back;
+   - back left;
+   - left side;
+   - front left;
+   - slightly above front;
+   - slightly above right;
+   - slightly above back;
+   - slightly above left.
+4. Rearrange thumbnails with the left/right controls before segmentation if the library upload order is wrong.
+5. Segment the photos.
+6. Review the segmentation contact sheet.
+7. Choose complexity and template style:
+   - `Plain` for easiest cutting and assembly.
+   - `Colored` for approximate sampled printed face colors.
+8. Generate the model and SVG.
+
 ## Second Object Test Checklist
 
 For each new test object, record:
 
 - object name and rough material;
 - number of selected photos;
+- whether the photos are in the intended slot/order;
 - whether the segmentation preview keeps the full object in white;
 - whether the 3D preview is recognizable;
+- whether plain or colored SVG was used;
 - whether **Download SVG** returns a file;
 - any failure message shown on the processing screen.

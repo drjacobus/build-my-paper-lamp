@@ -4,10 +4,11 @@ import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Camera from '@/components/Camera'
 import PhotoGallery from '@/components/PhotoGallery'
+import { MAX_CAPTURE_PHOTOS, MIN_CAPTURE_PHOTOS } from '@/lib/captureGuide'
 import { CapturedPhoto } from '@/types'
 
-const MIN_PHOTOS = 10
-const MAX_PHOTOS = 12
+const MIN_PHOTOS = MIN_CAPTURE_PHOTOS
+const MAX_PHOTOS = MAX_CAPTURE_PHOTOS
 
 // Resize + compress a photo blob before upload so cloud processing stays snappy.
 // 1024px wide at 80% JPEG quality → ~150KB per photo.
@@ -44,6 +45,18 @@ export default function CapturePage() {
 
   const handleDelete = useCallback((id: string) => {
     setPhotos((prev) => prev.filter((p) => p.id !== id))
+  }, [])
+
+  const handleMove = useCallback((id: string, direction: -1 | 1) => {
+    setPhotos((prev) => {
+      const index = prev.findIndex((photo) => photo.id === id)
+      const target = index + direction
+      if (index < 0 || target < 0 || target >= prev.length) return prev
+      const next = [...prev]
+      const [photo] = next.splice(index, 1)
+      next.splice(target, 0, photo)
+      return next
+    })
   }, [])
 
   const handlePhotos = useCallback((newPhotos: CapturedPhoto[]) => {
@@ -130,7 +143,7 @@ export default function CapturePage() {
       </div>
 
       <Camera photos={photos} onPhotos={handlePhotos} />
-      <PhotoGallery photos={photos} onDelete={handleDelete} />
+      <PhotoGallery photos={photos} onDelete={handleDelete} onMove={handleMove} />
 
       {photos.length > 0 && (
         <div className="mt-5 bg-white rounded-2xl p-4 border border-amber-100">
