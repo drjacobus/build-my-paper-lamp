@@ -698,7 +698,35 @@ Result:
   - page height: 850 mm.
 - Visual read: the pipeline technically works on a cluttered real household-object dataset when masks are available, but the mug shape is weak. The handle/concavity is mostly lost, which is expected for visual hulls and small object silhouettes.
 
-### Experiment 14: Printable Plane Strategy
+### Experiment 14: Washington RGB-D Solid Household Object
+
+Status: Technical pass, better shape fit than mug
+
+Input object:
+
+- Washington RGB-D Object Dataset, `bell_pepper_1`.
+- 12 selected views from two turntable sequences.
+- Dataset-provided segmentation masks used through the manifest `mask` column.
+
+Result:
+
+- Downloaded `bell_pepper_1.tar`.
+- Created `poc/input/washington-rgbd-bell-pepper-1/turntable-12-view-manifest.csv`.
+- Visual hull result:
+  - 466 occupied voxels out of 884,736 after cleanup;
+  - OBJ mesh with 488 vertices and 972 faces;
+  - watertight mesh.
+- Faceted shell result:
+  - 100 target faces -> 100 faces, 52 vertices, watertight;
+  - 200 target faces -> 200 faces, 102 vertices, watertight.
+- Connected net result:
+  - 100 faces;
+  - 8 islands;
+  - 43 glue tabs;
+  - page height: 855 mm.
+- Visual read: recognizability is better than the mug because the bell pepper is a solid silhouette-driven object. The result confirms that early product capture should prefer solid organic shapes and avoid handles, holes, loops, thin parts, and deep concavities.
+
+### Experiment 15: Printable Plane Strategy
 
 Status: Not started
 
@@ -713,7 +741,7 @@ Result:
 
 - TBD
 
-### Experiment 15: Physical Or Rendered Validation
+### Experiment 16: Physical Or Rendered Validation
 
 Status: Not started
 
@@ -739,6 +767,7 @@ Result:
 - Public benchmark success may not transfer directly to casual phone photos; the app should constrain capture instead of accepting arbitrary uploads.
 - Image-conditioned mesh APIs may hallucinate shape detail. A text prompt can help semantic features, but it cannot replace geometric evidence.
 - AI segmentation or capture guidance could improve the visual-hull route, but AI-generated geometry can drift away from the user's actual object.
+- Visual hull is weak for handles, holes, loops, thin parts, and concavities. The product should initially guide users toward solid silhouette-driven objects.
 
 ## Next Actions
 

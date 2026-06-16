@@ -1,0 +1,13 @@
+image,mask,azimuth,elevation
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_1.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_1_mask.png,0,10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_31.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_31_mask.png,60,10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_61.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_61_mask.png,120,10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_91.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_91_mask.png,180,10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_121.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_121_mask.png,240,10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_151.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_1_151_mask.png,300,10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_1.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_1_mask.png,0,-10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_31.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_31_mask.png,60,-10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_61.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_61_mask.png,120,-10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_91.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_91_mask.png,180,-10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_121.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_121_mask.png,240,-10
+raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_151.png,raw/rgbd-dataset/bell_pepper/bell_pepper_1/bell_pepper_1_2_151_mask.png,300,-10

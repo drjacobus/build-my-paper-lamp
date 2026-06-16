@@ -122,6 +122,12 @@ Initial findings:
   - 150-face and 300-face shells both watertight;
   - connected 150-face SVG net with 10 islands and 61 glue tabs;
   - visual recognizability is weak because the mug handle/concavity is mostly lost.
+- Washington RGB-D Bell Pepper 1 was tested as a solid-object follow-up:
+  - 12 selected masked RGB images from 2 turntable sequences;
+  - watertight visual-hull mesh with 488 vertices and 972 faces;
+  - 100-face and 200-face shells both watertight;
+  - connected 100-face SVG net with 8 islands and 43 glue tabs;
+  - visual recognizability is better than the mug because the object is solid and silhouette-driven.
 
 Current conclusion:
 
@@ -135,6 +141,7 @@ Current conclusion:
 - The first viable non-Tripo solution is controlled capture plus silhouette visual hull. It is not arbitrary photo reconstruction, but it gives a practical product constraint: guide the user to capture the object like a turntable scan on a clean background.
 - AI should be treated as an assistant to this geometry-first route, not as the primary source of truth. Good candidate uses are object masking, background cleanup, capture quality checks, rough angle estimation, and optional semantic hints; generated mesh details must still be checked against the input silhouettes.
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
+- Object choice matters: solid silhouette-driven forms are good early targets; handles, holes, loops, thin parts, and concavities are weak targets for visual hull and should be filtered out or handled by a later method.
 
 Next action:
 

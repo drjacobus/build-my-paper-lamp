@@ -76,6 +76,14 @@ Each tool or pipeline must be evaluated against the same checklist:
   - 150-face and 300-face shells both stayed watertight;
   - connected 150-face net produced 10 islands and 61 glue tabs;
   - visual read: technical pass, but weak recognizability because the mug handle/concavity is mostly lost.
+- Started the Washington RGB-D Bell Pepper 1 test:
+  - downloaded `bell_pepper_1.tar`;
+  - created `poc/input/washington-rgbd-bell-pepper-1/turntable-12-view-manifest.csv`;
+  - used the dataset's provided segmentation masks;
+  - 12-view masked visual hull produced a watertight mesh with 488 vertices and 972 faces;
+  - 100-face and 200-face shells both stayed watertight;
+  - connected 100-face net produced 8 islands and 43 glue tabs;
+  - visual read: better than the mug and confirms solid silhouette-driven objects are the right first target class.
 
 ### 2026-06-15: Phase 1 Setup
 
