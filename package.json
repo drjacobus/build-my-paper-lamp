@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:mac": "bash scripts/start-mac-local.sh",
+    "tunnel:https": "npx -y localtunnel -- --port 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

@@ -35,6 +35,8 @@ http://YOUR_MAC_LOCAL_IP:3000
 
 Some mobile browsers block live camera access on local `http://` network URLs. If that happens, use **Choose Photos** in the capture screen and select 10-15 images from the phone library. For live camera capture from another device, use an HTTPS tunnel such as ngrok or Cloudflare Tunnel.
 
+See `HTTPS_CAMERA_SETUP.md` for the current localtunnel setup.
+
 Find the Mac IP with:
 
 ```bash

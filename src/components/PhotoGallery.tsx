@@ -23,7 +23,7 @@ export default function PhotoGallery({ photos, onDelete }: Props) {
         )}
       </div>
       <div className="grid grid-cols-4 gap-2">
-        {photos.map((photo) => (
+        {photos.map((photo, index) => (
           <div key={photo.id} className="relative group aspect-square">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -31,6 +31,9 @@ export default function PhotoGallery({ photos, onDelete }: Props) {
               alt="Captured"
               className="w-full h-full object-cover rounded-lg"
             />
+            <div className="absolute left-1 top-1 bg-black/60 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {index + 1}
+            </div>
             <button
               onClick={() => onDelete(photo.id)}
               className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center opacity-0 group-active:opacity-100 touch-manipulation"

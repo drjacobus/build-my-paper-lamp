@@ -7,7 +7,7 @@ import PhotoGallery from '@/components/PhotoGallery'
 import { CapturedPhoto } from '@/types'
 
 const MIN_PHOTOS = 10
-const MAX_PHOTOS = 15
+const MAX_PHOTOS = 12
 
 // Resize + compress a photo blob before upload so cloud processing stays snappy.
 // 1024px wide at 80% JPEG quality → ~150KB per photo.
@@ -102,7 +102,7 @@ export default function CapturePage() {
         <a href="/" className="text-amber-600 text-2xl leading-none">←</a>
         <div>
           <h1 className="text-lg font-bold text-amber-900">Capture Photos</h1>
-          <p className="text-xs text-amber-600">Capture one full turn around the object</p>
+          <p className="text-xs text-amber-600">Follow the 12 guided angles</p>
         </div>
       </div>
 
@@ -110,7 +110,7 @@ export default function CapturePage() {
         <h2 className="text-sm font-bold text-amber-900 mb-2">Capture guide</h2>
         <div className="grid grid-cols-2 gap-2 text-xs text-amber-700">
           <div className="bg-amber-50 rounded-xl p-2">One object only</div>
-          <div className="bg-amber-50 rounded-xl p-2">Full 360° turn</div>
+          <div className="bg-amber-50 rounded-xl p-2">Follow all 12 steps</div>
           <div className="bg-amber-50 rounded-xl p-2">Plain background</div>
           <div className="bg-amber-50 rounded-xl p-2">Object fully visible</div>
         </div>

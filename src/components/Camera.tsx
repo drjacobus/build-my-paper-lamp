@@ -4,6 +4,22 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 import { CapturedPhoto } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
 
+const MAX_GUIDED_PHOTOS = 12
+const GUIDE_STEPS = [
+  'Front',
+  'Front right',
+  'Right side',
+  'Back right',
+  'Back',
+  'Back left',
+  'Left side',
+  'Front left',
+  'Slightly above front',
+  'Slightly above right',
+  'Slightly above back',
+  'Slightly above left',
+]
+
 interface Props {
   onPhotos: (photos: CapturedPhoto[]) => void
   photos: CapturedPhoto[]
@@ -48,7 +64,7 @@ export default function Camera({ onPhotos, photos }: Props) {
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return
 
-    const remaining = Math.max(0, 15 - photos.length)
+    const remaining = Math.max(0, MAX_GUIDED_PHOTOS - photos.length)
     const selected = Array.from(files)
       .filter((file) => file.type.startsWith('image/'))
       .slice(0, remaining)
@@ -71,7 +87,7 @@ export default function Camera({ onPhotos, photos }: Props) {
       )
     )
 
-    onPhotos([...photos, ...loaded].slice(0, 15))
+    onPhotos([...photos, ...loaded].slice(0, MAX_GUIDED_PHOTOS))
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -91,7 +107,7 @@ export default function Camera({ onPhotos, photos }: Props) {
       if (!blob) return
       const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
       const photo: CapturedPhoto = { id: uuidv4(), dataUrl, blob, timestamp: Date.now() }
-      onPhotos([...photos, photo])
+      onPhotos([...photos, photo].slice(0, MAX_GUIDED_PHOTOS))
       // Haptic feedback
       if ('vibrate' in navigator) navigator.vibrate(50)
       setFlash(true)
@@ -113,12 +129,12 @@ export default function Camera({ onPhotos, photos }: Props) {
         <div className="text-5xl">📷</div>
         <p className="text-amber-800 font-medium">Camera access denied</p>
         <p className="text-sm text-amber-600">
-          Local network camera access can be blocked by the browser. Choose 10–15 photos from your library instead.
+          Open the HTTPS tunnel URL on your phone for live camera capture, or choose photos from your library.
         </p>
         <button
           type="button"
           onClick={choosePhotos}
-          disabled={photos.length >= 15}
+          disabled={photos.length >= MAX_GUIDED_PHOTOS}
           className="bg-amber-500 text-white font-bold px-6 py-3 rounded-2xl shadow disabled:bg-amber-200 disabled:text-amber-400"
         >
           Choose Photos
@@ -126,6 +142,10 @@ export default function Camera({ onPhotos, photos }: Props) {
       </div>
     )
   }
+
+  const currentStep = Math.min(photos.length, GUIDE_STEPS.length - 1)
+  const nextLabel = GUIDE_STEPS[currentStep]
+  const done = photos.length >= MAX_GUIDED_PHOTOS
 
   return (
     <div className="relative w-full">
@@ -137,6 +157,29 @@ export default function Camera({ onPhotos, photos }: Props) {
         className="hidden"
         onChange={(event) => handleFiles(event.target.files)}
       />
+      <div className="bg-white rounded-2xl p-4 mb-4 border border-amber-100">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-semibold text-amber-600 uppercase tracking-wide">
+            Guided capture
+          </span>
+          <span className="text-xs text-amber-500">{photos.length} / {MAX_GUIDED_PHOTOS}</span>
+        </div>
+        <div className="text-lg font-bold text-amber-900">{done ? 'Capture complete' : nextLabel}</div>
+        <p className="text-xs text-amber-600 mt-1">
+          {done
+            ? 'Continue to segmentation when ready.'
+            : 'Keep the object centered and move one step around it before each shot.'}
+        </p>
+        <div className="grid grid-cols-12 gap-1 mt-3">
+          {GUIDE_STEPS.map((label, index) => (
+            <div
+              key={label}
+              className={`h-2 rounded-full ${index < photos.length ? 'bg-amber-500' : index === photos.length ? 'bg-amber-300' : 'bg-amber-100'}`}
+            />
+          ))}
+        </div>
+      </div>
+
       <div className="relative bg-black rounded-2xl overflow-hidden aspect-[3/4]">
         <video
           ref={videoRef}
@@ -153,8 +196,13 @@ export default function Camera({ onPhotos, photos }: Props) {
         )}
         {/* Photo count badge */}
         <div className="absolute top-3 right-3 bg-black/60 text-white text-sm font-bold px-3 py-1 rounded-full">
-          {photos.length} / 15
+          {photos.length} / {MAX_GUIDED_PHOTOS}
         </div>
+        {!done && (
+          <div className="absolute left-3 bottom-3 right-3 bg-black/60 text-white text-sm font-semibold px-3 py-2 rounded-xl text-center">
+            Next: {nextLabel}
+          </div>
+        )}
         {/* Crosshair guide */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="w-24 h-24 border-2 border-white/40 rounded-lg" />
@@ -167,7 +215,7 @@ export default function Camera({ onPhotos, photos }: Props) {
       <div className="flex justify-center mt-6">
         <button
           onClick={capture}
-          disabled={!cameraReady || photos.length >= 15}
+          disabled={!cameraReady || done}
           className="w-20 h-20 rounded-full bg-white border-4 border-amber-400 shadow-lg active:scale-95 transition-transform disabled:opacity-40 flex items-center justify-center"
           aria-label="Take photo"
         >
@@ -176,12 +224,12 @@ export default function Camera({ onPhotos, photos }: Props) {
       </div>
 
       <p className="text-center text-sm text-amber-700 mt-3">
-        Walk around your object once — aim for 10–15 clean photos
+        Take one photo at each guide step. Avoid changing distance.
       </p>
       <button
         type="button"
         onClick={choosePhotos}
-        disabled={photos.length >= 15}
+        disabled={done}
         className="mt-4 w-full border-2 border-amber-300 text-amber-700 font-semibold py-3 rounded-2xl disabled:opacity-40"
       >
         Choose from Photos
