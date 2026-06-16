@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 type Complexity = 'simple' | 'medium' | 'detailed'
+type TemplateStyle = 'plain' | 'colored'
 
 const COMPLEXITY: Array<{ key: Complexity; label: string; desc: string }> = [
   { key: 'simple', label: 'Simple', desc: 'Fewer pieces, softer detail' },
@@ -17,7 +18,7 @@ function ReviewContent() {
   const jobId = params.get('jobId') ?? ''
   const contactSheetUrl = params.get('contactSheetUrl') ?? (jobId ? `/api/contact-sheet?jobId=${encodeURIComponent(jobId)}` : '')
   const [complexity, setComplexity] = useState<Complexity>('medium')
-  const [coloredSvg, setColoredSvg] = useState(false)
+  const [templateStyle, setTemplateStyle] = useState<TemplateStyle>('plain')
   const [starting, setStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -29,7 +30,7 @@ function ReviewContent() {
       const res = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobId, complexity, coloredSvg }),
+        body: JSON.stringify({ jobId, complexity, coloredSvg: templateStyle === 'colored' }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => null)
@@ -101,20 +102,39 @@ function ReviewContent() {
         </div>
       </div>
 
-      <label className="flex items-start gap-3 bg-white rounded-2xl p-4 border border-amber-100 mb-5">
-        <input
-          type="checkbox"
-          checked={coloredSvg}
-          onChange={(event) => setColoredSvg(event.target.checked)}
-          className="mt-1 accent-amber-500"
-        />
-        <span>
-          <span className="block text-sm font-bold text-amber-900">Colored SVG</span>
-          <span className="block text-xs text-amber-600 mt-1">
-            Adds approximate sampled colors to faces. Use plain SVG for easiest cutting.
-          </span>
-        </span>
-      </label>
+      <div className="mb-5">
+        <h2 className="text-sm font-bold text-amber-900 mb-3">Template style</h2>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setTemplateStyle('plain')}
+            className={`rounded-2xl p-4 text-left border transition-colors ${
+              templateStyle === 'plain'
+                ? 'bg-amber-500 border-amber-500 text-white'
+                : 'bg-white border-amber-200 text-amber-800'
+            }`}
+          >
+            <div className="text-sm font-bold">Plain</div>
+            <div className={`text-[11px] mt-1 ${templateStyle === 'plain' ? 'text-amber-50' : 'text-amber-500'}`}>
+              Best for cutting and assembly
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => setTemplateStyle('colored')}
+            className={`rounded-2xl p-4 text-left border transition-colors ${
+              templateStyle === 'colored'
+                ? 'bg-amber-500 border-amber-500 text-white'
+                : 'bg-white border-amber-200 text-amber-800'
+            }`}
+          >
+            <div className="text-sm font-bold">Colored</div>
+            <div className={`text-[11px] mt-1 ${templateStyle === 'colored' ? 'text-amber-50' : 'text-amber-500'}`}>
+              Approximate printed face colors
+            </div>
+          </button>
+        </div>
+      </div>
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
@@ -127,7 +147,7 @@ function ReviewContent() {
         disabled={starting}
         className="w-full bg-amber-500 hover:bg-amber-600 active:bg-amber-700 disabled:bg-amber-200 disabled:text-amber-400 text-white font-bold text-lg py-4 rounded-2xl transition-colors shadow-lg"
       >
-        {starting ? 'Starting…' : 'Generate Paper Model'}
+        {starting ? 'Starting…' : `Generate ${templateStyle === 'colored' ? 'Colored' : 'Plain'} Model`}
       </button>
 
       <a
