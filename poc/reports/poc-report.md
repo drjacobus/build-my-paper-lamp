@@ -669,7 +669,36 @@ Result:
   - page height: 855 mm.
 - Visual read: recognizable as a long animal/figurine volume, but blockier and less characterful than the Bunny. Good proof that the pipeline transfers to a real public physical-object image set.
 
-### Experiment 13: Printable Plane Strategy
+### Experiment 13: Washington RGB-D Masked Household Object
+
+Status: Technical pass, weak recognizability
+
+Input object:
+
+- Washington RGB-D Object Dataset, `coffee_mug_1`.
+- 12 selected views from two turntable sequences.
+- Dataset-provided segmentation masks used through the manifest `mask` column.
+
+Result:
+
+- Downloaded `coffee_mug_1.tar`.
+- Created `poc/input/washington-rgbd-coffee-mug-1/turntable-12-view-manifest.csv`.
+- Added optional `mask` column support to `build-turntable-visual-hull.py`.
+- Visual hull result:
+  - 761 occupied voxels out of 884,736 after cleanup;
+  - OBJ mesh with 708 vertices and 1412 faces;
+  - watertight mesh.
+- Faceted shell result:
+  - 150 target faces -> 150 faces, 77 vertices, watertight;
+  - 300 target faces -> 300 faces, 152 vertices, watertight.
+- Connected net result:
+  - 150 faces;
+  - 10 islands;
+  - 61 glue tabs;
+  - page height: 850 mm.
+- Visual read: the pipeline technically works on a cluttered real household-object dataset when masks are available, but the mug shape is weak. The handle/concavity is mostly lost, which is expected for visual hulls and small object silhouettes.
+
+### Experiment 14: Printable Plane Strategy
 
 Status: Not started
 
@@ -684,7 +713,7 @@ Result:
 
 - TBD
 
-### Experiment 14: Physical Or Rendered Validation
+### Experiment 15: Physical Or Rendered Validation
 
 Status: Not started
 

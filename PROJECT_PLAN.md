@@ -115,6 +115,13 @@ Initial findings:
   - watertight visual-hull mesh with 16,462 vertices and 32,936 faces;
   - 300-face and 600-face shells both watertight;
   - connected 300-face SVG net with 25 islands and 144 glue tabs.
+- Washington RGB-D Coffee Mug 1 was started as the next generalization benchmark:
+  - 12 selected masked RGB images from 2 turntable sequences;
+  - manifest `mask` column support added;
+  - watertight visual-hull mesh with 708 vertices and 1412 faces;
+  - 150-face and 300-face shells both watertight;
+  - connected 150-face SVG net with 10 islands and 61 glue tabs;
+  - visual recognizability is weak because the mug handle/concavity is mostly lost.
 
 Current conclusion:
 

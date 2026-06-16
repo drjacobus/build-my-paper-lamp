@@ -34,6 +34,7 @@ class TurntableView:
     elevation: float
     index: int
     azimuth: float
+    mask_path: Path | None = None
 
 
 def resolve_manifest_image(image_dir: Path, manifest_path: Path, image_value: str) -> Path:
@@ -66,6 +67,10 @@ def load_manifest(image_dir: Path, manifest_path: Path) -> list[TurntableView]:
             image_path = resolve_manifest_image(image_dir, manifest_path, image_value)
             if not image_path.exists():
                 raise RuntimeError(f"{manifest_path} row {index + 2} image does not exist: {image_path}")
+            mask_value = (row.get("mask") or "").strip()
+            mask_path = resolve_manifest_image(image_dir, manifest_path, mask_value) if mask_value else None
+            if mask_path is not None and not mask_path.exists():
+                raise RuntimeError(f"{manifest_path} row {index + 2} mask does not exist: {mask_path}")
 
             views.append(
                 TurntableView(
@@ -73,6 +78,7 @@ def load_manifest(image_dir: Path, manifest_path: Path) -> list[TurntableView]:
                     elevation=float(elevation_value),
                     index=index,
                     azimuth=float(azimuth_value),
+                    mask_path=mask_path,
                 )
             )
 
@@ -138,6 +144,19 @@ def make_mask(image_path: Path, threshold: int, close_radius: int, mask_mode: st
     else:
         distance_from_white = 255 - image.min(axis=2)
         mask = distance_from_white > threshold
+    if close_radius > 0:
+        footprint = morphology.disk(close_radius)
+        mask = morphology.closing(mask, footprint)
+        mask = morphology.dilation(mask, footprint)
+    return mask
+
+
+def load_view_mask(view: TurntableView, threshold: int, close_radius: int, mask_mode: str) -> np.ndarray:
+    if view.mask_path is None:
+        return make_mask(view.path, threshold, close_radius, mask_mode)
+
+    mask_image = np.asarray(Image.open(view.mask_path).convert("L"), dtype=np.uint8)
+    mask = mask_image > threshold
     if close_radius > 0:
         footprint = morphology.disk(close_radius)
         mask = morphology.closing(mask, footprint)
@@ -231,7 +250,7 @@ def main() -> None:
     valid_views = np.zeros(len(points), dtype=np.uint16)
 
     for view in views:
-        mask = make_mask(view.path, args.mask_threshold, args.mask_close_radius, args.mask_mode)
+        mask = load_view_mask(view, args.mask_threshold, args.mask_close_radius, args.mask_mode)
         u, v, inside = project_orthographic(points, view, mask.shape, args.projection_bound)
         valid_views[inside] += 1
         visible = np.zeros(len(points), dtype=bool)

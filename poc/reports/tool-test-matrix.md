@@ -68,6 +68,14 @@ Each tool or pipeline must be evaluated against the same checklist:
   - 12-view visual hull produced a watertight mesh with 16,462 vertices and 32,936 faces;
   - 300-face and 600-face shells both stayed watertight;
   - connected 300-face net produced 25 islands and 144 glue tabs.
+- Started the Washington RGB-D Coffee Mug 1 test:
+  - downloaded `coffee_mug_1.tar`;
+  - created `poc/input/washington-rgbd-coffee-mug-1/turntable-12-view-manifest.csv`;
+  - added optional manifest mask support and used the dataset's provided segmentation masks;
+  - 12-view masked visual hull produced a watertight mesh with 708 vertices and 1412 faces;
+  - 150-face and 300-face shells both stayed watertight;
+  - connected 150-face net produced 10 islands and 61 glue tabs;
+  - visual read: technical pass, but weak recognizability because the mug handle/concavity is mostly lost.
 
 ### 2026-06-15: Phase 1 Setup
 
