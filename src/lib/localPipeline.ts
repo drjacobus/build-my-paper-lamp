@@ -16,6 +16,7 @@ export function jobDir(jobId: string) {
 export function startLocalPipeline(jobId: string) {
   const dir = jobDir(jobId)
   const script = path.join(process.cwd(), 'poc/scripts/run-mvp-pipeline.py')
+  const stderrTail: string[] = []
 
   updateJob(jobId, {
     status: 'scanning',
@@ -44,13 +45,17 @@ export function startLocalPipeline(jobId: string) {
   })
 
   child.stderr.on('data', (chunk) => {
-    console.error(`[pipeline:${jobId}] ${chunk.toString()}`)
+    const text = chunk.toString()
+    console.error(`[pipeline:${jobId}] ${text}`)
+    stderrTail.push(text)
+    while (stderrTail.join('').length > 2500) stderrTail.shift()
   })
 
   child.on('close', (code) => {
     const outputDir = path.join(dir, 'output')
     const modelPath = path.join(outputDir, 'paperlamp-model.glb')
     const svgPath = path.join(outputDir, 'paperlamp-net.svg')
+    const contactSheetPath = path.join(outputDir, 'segmentation-contact-sheet.jpg')
 
     if (code === 0 && fs.existsSync(modelPath) && fs.existsSync(svgPath)) {
       updateJob(jobId, {
@@ -58,17 +63,24 @@ export function startLocalPipeline(jobId: string) {
         progress: 100,
         step: 'Paper lamp design ready',
         modelUrl: `/api/model?jobId=${encodeURIComponent(jobId)}`,
+        contactSheetUrl: fs.existsSync(contactSheetPath)
+          ? `/api/contact-sheet?jobId=${encodeURIComponent(jobId)}`
+          : undefined,
         modelPath,
         svgPath,
+        contactSheetPath: fs.existsSync(contactSheetPath) ? contactSheetPath : undefined,
       })
       return
     }
 
+    const detail = stderrTail.join('').trim()
     updateJob(jobId, {
       status: 'failed',
       progress: 100,
       step: 'Processing failed',
-      error: `Pipeline exited with code ${code}`,
+      error: detail
+        ? `Pipeline exited with code ${code}. ${detail.slice(-1200)}`
+        : `Pipeline exited with code ${code}`,
     })
   })
 }

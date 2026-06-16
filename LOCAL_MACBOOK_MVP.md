@@ -67,3 +67,14 @@ Uploaded images and generated results are stored under:
 ```
 
 Delete old test jobs from that folder when disk usage grows.
+
+## Second Object Test Checklist
+
+For each new test object, record:
+
+- object name and rough material;
+- number of selected photos;
+- whether the segmentation preview keeps the full object in white;
+- whether the 3D preview is recognizable;
+- whether **Download SVG** returns a file;
+- any failure message shown on the processing screen.

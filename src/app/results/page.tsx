@@ -9,6 +9,7 @@ function ResultsContent() {
   const params = useSearchParams()
   const jobId = params.get('jobId') ?? ''
   const modelUrl = params.get('modelUrl') ?? ''
+  const contactSheetUrl = params.get('contactSheetUrl') ?? ''
 
   const [svgData, setSvgData] = useState<string | null>(null)
   const [tab, setTab] = useState<'3d' | 'svg'>('3d')
@@ -21,8 +22,8 @@ function ResultsContent() {
     setTab('svg')
   }, [])
 
-  function downloadSVG() {
-    if (!svgData) return
+  function downloadClientSVG() {
+    if (!svgData) return false
     const blob = new Blob([svgData], { type: 'image/svg+xml' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -30,11 +31,15 @@ function ResultsContent() {
     a.download = `lamp-${jobId.slice(0, 8) || 'design'}.svg`
     a.click()
     URL.revokeObjectURL(url)
+    return true
   }
 
   async function downloadFromServer() {
     const res = await fetch(`/api/download?jobId=${jobId}`)
-    if (!res.ok) { downloadSVG(); return }
+    if (!res.ok) {
+      downloadClientSVG()
+      return
+    }
     const blob = await res.blob()
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -86,6 +91,19 @@ function ResultsContent() {
       {/* 3D Viewer */}
       {tab === '3d' && (
         <div className="mb-5">
+          {contactSheetUrl && (
+            <div className="mb-4 bg-white rounded-2xl p-3 border border-amber-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={contactSheetUrl}
+                alt="AI segmentation preview"
+                className="w-full max-h-64 object-contain rounded-xl bg-white"
+              />
+              <p className="text-xs text-center text-amber-600 mt-2">
+                AI segmentation preview. White areas became the 3D silhouette.
+              </p>
+            </div>
+          )}
           <ModelViewer modelUrl={resolvedModelUrl} />
           <p className="text-xs text-center text-amber-500 mt-2">Drag to rotate · Pinch to zoom</p>
         </div>
@@ -118,9 +136,9 @@ function ResultsContent() {
       )}
 
       {/* Download */}
-      {svgData && (
+      {jobId && (
         <button
-          onClick={downloadSVG}
+          onClick={downloadFromServer}
           className="w-full bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-lg py-4 rounded-2xl shadow-lg mb-4"
         >
           ⬇ Download SVG

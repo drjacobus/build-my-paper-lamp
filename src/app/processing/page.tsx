@@ -106,7 +106,11 @@ function ProcessingContent() {
           clearInterval(id)
           setProgress(100)
           setTimeout(() => {
-            router.push(`/results?jobId=${jobId}&modelUrl=${encodeURIComponent(data.modelUrl)}`)
+            const target = new URL('/results', window.location.origin)
+            target.searchParams.set('jobId', jobId)
+            if (data.modelUrl) target.searchParams.set('modelUrl', data.modelUrl)
+            if (data.contactSheetUrl) target.searchParams.set('contactSheetUrl', data.contactSheetUrl)
+            router.push(`${target.pathname}${target.search}`)
           }, 800)
           return
         }
@@ -132,7 +136,16 @@ function ProcessingContent() {
       <main className="min-h-screen bg-amber-50 flex flex-col items-center justify-center px-6">
         <div className="text-5xl mb-4">😞</div>
         <h2 className="text-xl font-bold text-red-700 mb-2">Processing failed</h2>
-        <p className="text-sm text-red-500 mb-6 text-center">{failMsg}</p>
+        <p className="text-sm text-red-500 mb-4 text-center whitespace-pre-wrap break-words max-w-sm">{failMsg}</p>
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6 text-left max-w-sm">
+          <p className="text-sm font-semibold text-red-700 mb-2">Most common fixes</p>
+          <ul className="text-xs text-red-600 list-disc list-inside space-y-1">
+            <li>Use 10-15 images of one object only.</li>
+            <li>Keep the object fully visible and centered.</li>
+            <li>Avoid top-down-only shots and duplicate angles.</li>
+            <li>Use a plain or high-contrast background.</li>
+          </ul>
+        </div>
         <a href="/capture" className="bg-amber-500 text-white font-bold px-8 py-3 rounded-2xl">
           Try again
         </a>

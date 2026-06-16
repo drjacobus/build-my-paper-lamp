@@ -15,6 +15,8 @@ export interface Job {
   error?: string
   modelUrl?: string
   modelPath?: string
+  contactSheetUrl?: string
+  contactSheetPath?: string
   svgPath?: string
   svgData?: string
   photoCount?: number

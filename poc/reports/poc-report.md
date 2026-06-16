@@ -907,3 +907,4 @@ Result:
 6. Improve connected-net page layout, fold/cut styling, and assembly order.
 7. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.
 8. Deploy the first technical UI as a single Docker app with local Python processing and persistent cloud storage, then split frontend/worker later if the tester flow proves useful.
+9. During app testing, record the second-object result against three gates: segmentation preview quality, recognizable 3D preview, and successful SVG download.

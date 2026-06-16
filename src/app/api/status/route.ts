@@ -19,5 +19,6 @@ export async function GET(req: NextRequest) {
     step: job.step,
     error: job.error,
     modelUrl: job.modelUrl,
+    contactSheetUrl: job.contactSheetUrl,
   })
 }
