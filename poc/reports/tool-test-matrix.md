@@ -37,10 +37,10 @@ Each tool or pipeline must be evaluated against the same checklist:
 | Tool | Local availability | Input tested | Mesh output | Automation path | Result | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | COLMAP | Installed in `paperlamp-poc` | Tiny NeRF Lego, Middlebury DinoRing, Stanford Bunny rendered views | Sparse reconstruction plus failed sparse mesh attempt | CLI | Diagnostic only for now | Tiny NeRF failed to produce useful sparse geometry. Calibrated DinoRing produced two sparse models covering 47 of 48 images. Bunny rendered views improved to 43/48 registered images and 2139 sparse points with fixed intrinsics plus relaxed mapper settings. Sparse Delaunay meshing produced an unusable spike-like mesh; Poisson failed because sparse PLY lacks normals. Dense stereo failed locally because this COLMAP build requires CUDA. |
-| Controlled turntable visual hull | Implemented as `build-turntable-visual-hull.py` | Stanford Bunny rendered turntable views, including a 12-image subset | Watertight OBJ mesh | Fully scriptable | Constrained Phase 1A pass | Assumes same object, centered capture, clean/white background, and known or estimated turntable angles. The 12-image subset produced a watertight mesh, a watertight 300-face shell, and a connected SVG net. CSV manifest input now supports arbitrary app-style image filenames plus azimuth/elevation. This is the current non-Tripo solution path. |
+| Controlled turntable visual hull | Implemented as `build-turntable-visual-hull.py` | Stanford Bunny rendered views, THU-MVS Dog, Washington objects, real Jagermeister bottle | Watertight OBJ mesh | Fully scriptable | Constrained Phase 1A pass | Assumes same object, centered capture, clean/white or segmentable background, and known or estimated turntable angles. The Bunny 12-image subset produced a watertight mesh, a watertight 300-face shell, and a connected SVG net. The real Jagermeister bottle became recognizable only after AI segmentation. CSV manifest input supports arbitrary app-style image filenames plus azimuth/elevation. This is the current non-Tripo solution path. |
 | Meshroom / AliceVision | Missing | Not tested | Not tested | CLI/GUI mixed | Blocked until installed | Useful comparison if available. |
 | Cloud/API image-to-3D | Existing repo client stub for Tripo; Tripo rejected after prior user trial | Not tested further in current POC | Not tested | API-dependent | Deferred | Only useful if it returns downloadable meshes and beats the controlled visual-hull baseline. Text descriptions may help semantic shape, but outputs must be checked for hallucinated geometry. |
-| AI-assisted capture/masking | Not implemented yet | Not tested | N/A | API/model-dependent | Candidate assistant, not core geometry | Useful roles: segmentation masks, background cleanup, angle estimation, bad-frame rejection, capture guidance, and semantic hints such as preserving dinosaur spikes. Risk: hallucinated geometry if AI-generated meshes are trusted directly. |
+| AI-assisted capture/masking | Implemented locally with `rembg` + `isnet-general-use` | Real Jagermeister bottle phone photos | N/A; improves visual-hull input masks | Fully scriptable locally after model download | Required for real-phone pass | Heuristic masks failed on the glossy dark bottle. AI masks preserved the bottle body, shoulders, neck, and cap well enough for a recognizable watertight visual hull and low-poly shell. Still not core geometry: masks support the visual hull rather than hallucinating mesh detail. |
 
 ## Mesh Cleanup And 2D Conversion Tools
 
@@ -99,6 +99,15 @@ Each tool or pipeline must be evaluated against the same checklist:
   - 200 and 400-face shells stayed watertight;
   - connected 200-face net produced 15 islands and 93 glue tabs;
   - visual read: shape failed because the heuristic masks over-smoothed the bottle and missed neck/cap detail. This confirms the next real-photo step should be true AI segmentation or cleaner capture backgrounds.
+- Added proper AI segmentation for the Jagermeister bottle:
+  - installed `rembg[cpu]`, adding ONNX Runtime support;
+  - downloaded and used `isnet-general-use`;
+  - added `make-ai-foreground-masks.py` to produce binary masks plus an inspection contact sheet;
+  - created `turntable-10-view-ai-isnet-manifest.csv` for the first 10 upright views;
+  - AI-mask visual hull at resolution 112 and 0.80 consensus produced a watertight mesh with 13,108 vertices and 26,212 faces;
+  - 180, 320, and 640-face shell variants stayed watertight;
+  - connected 320-face net produced 24 islands and 142 glue tabs;
+  - visual read: pass for recognizable bottle shape, including rectangular body, shoulders, neck, and cap. This is still silhouette identity, not label/texture identity.
 
 ### 2026-06-15: Phase 1 Setup
 

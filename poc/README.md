@@ -219,6 +219,34 @@ photo_001.png,mask_001.png,0,10
 photo_002.png,mask_002.png,30,10
 ```
 
+Generate AI foreground masks for real phone photos:
+
+```bash
+/opt/anaconda3/envs/paperlamp-poc/bin/python poc/scripts/make-ai-foreground-masks.py \
+  --image-dir poc/input/real-jagermeister/images \
+  --output-dir poc/input/real-jagermeister/masks-ai-isnet \
+  --model isnet-general-use \
+  --contact-sheet poc/output/real-jagermeister/renders/ai-isnet-mask-contact-sheet.jpg
+```
+
+Run the current Jagermeister real-photo gate:
+
+```bash
+/opt/anaconda3/envs/paperlamp-poc/bin/python poc/scripts/build-turntable-visual-hull.py \
+  --image-dir poc/input/real-jagermeister \
+  --view-manifest poc/input/real-jagermeister/turntable-10-view-ai-isnet-manifest.csv \
+  --output-dir poc/output/real-jagermeister/reconstruction/turntable-visual-hull-10views-ai-isnet-r112-c080 \
+  --name-prefix real-jagermeister-10view-ai-isnet \
+  --resolution 112 \
+  --min-consensus 0.80 \
+  --mask-threshold 1 \
+  --mask-close-radius 1 \
+  --normalize-mask-crop \
+  --crop-padding 0.18
+```
+
+This is the first real-phone-photo pass where the reconstructed shape reads as the bottle: rectangular body, shoulder transition, neck, and cap. It is still silhouette geometry, not label or texture reconstruction.
+
 When the object is small in the frame, normalize each mask crop before visual-hull carving:
 
 ```bash

@@ -1,0 +1,11 @@
+image,mask,azimuth,elevation
+images/IMG_7390.png,masks-ai-isnet/IMG_7390_mask.png,0,5
+images/IMG_7391.png,masks-ai-isnet/IMG_7391_mask.png,36,5
+images/IMG_7392.png,masks-ai-isnet/IMG_7392_mask.png,72,5
+images/IMG_7393.png,masks-ai-isnet/IMG_7393_mask.png,108,5
+images/IMG_7394.png,masks-ai-isnet/IMG_7394_mask.png,144,5
+images/IMG_7395.png,masks-ai-isnet/IMG_7395_mask.png,180,5
+images/IMG_7396.png,masks-ai-isnet/IMG_7396_mask.png,216,5
+images/IMG_7397.png,masks-ai-isnet/IMG_7397_mask.png,252,5
+images/IMG_7398.png,masks-ai-isnet/IMG_7398_mask.png,288,5
+images/IMG_7399.png,masks-ai-isnet/IMG_7399_mask.png,324,5

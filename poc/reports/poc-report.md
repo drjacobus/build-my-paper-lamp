@@ -32,6 +32,12 @@ Current best technical result:
 - A reduced 12-image Bunny subset, matching the intended app input count, also produced a watertight mesh, a 300-face watertight shell, and a connected SVG net with 21 islands and 131 glue tabs.
 - Manifest-based input was added so the same path can accept arbitrary app-style image filenames plus approximate azimuth/elevation values.
 - This should be treated as a pass only under explicit capture constraints: same object, centered, clean/white background, enough silhouette coverage, and known or estimated viewing angles.
+- The first real phone-photo object gate now passes after proper AI segmentation:
+  - a Jagermeister bottle from 10 upright phone views produced a watertight mesh with 13,108 vertices and 26,212 faces;
+  - 180, 320, and 640-face shell variants stayed watertight;
+  - the 320-face connected net produced 24 islands and 142 glue tabs;
+  - the result is recognizable as a bottle with rectangular body, shoulders, neck, and cap;
+  - the result does not preserve label or texture identity.
 
 ## Setup Findings
 
@@ -60,7 +66,7 @@ Implication:
 
 ## Phase Gate
 
-Current status: **Phase 1A constrained pass; not ready for full Phase 2 UI**
+Current status: **Phase 1A constrained pass with first real-phone object proof; not ready for full Phase 2 UI**
 
 Reason:
 
@@ -71,7 +77,8 @@ Reason:
 - The connected Bunny net has tabs and connected islands, but still lacks page layout, fold-line styling, and assembly validation.
 - A controlled Bunny benchmark now proves the core transformation from 12 clean turntable images to mesh to faceted shell to connected SVG net.
 - COLMAP should not be treated as a Phase 1A pass yet. It remains useful, but the current result is not satisfying enough for the product.
-- Before investing heavily in UI, the same controlled visual-hull route should be validated on at least one real phone-captured object with a clean background.
+- The same controlled visual-hull route has now been validated on one real phone-captured object after AI segmentation.
+- Before investing heavily in UI, the next hardening work should focus on capture guidance, AI segmentation reliability, rough angle estimation, and bad-frame rejection.
 
 ## Experiment Results
 
@@ -781,7 +788,7 @@ Interpretation:
 
 ### Experiment 16: Real Phone-Photo Bottle Test
 
-Status: Technical pass, visual failure
+Status: Pass after AI segmentation
 
 Input object:
 
@@ -795,8 +802,14 @@ Setup:
 - Created `poc/input/real-jagermeister/turntable-10-view-manifest.csv`.
 - Added `poc/scripts/make-simple-foreground-masks.py` as a lightweight non-AI foreground-mask fallback.
 - Generated tuned masks under `poc/input/real-jagermeister/masks-tuned/`.
+- Installed `rembg[cpu]` and CPU ONNX Runtime.
+- Added `poc/scripts/make-ai-foreground-masks.py`.
+- Generated AI masks with `isnet-general-use` under `poc/input/real-jagermeister/masks-ai-isnet/`.
+- Created `poc/input/real-jagermeister/turntable-10-view-ai-isnet-manifest.csv`.
 
 Result:
+
+Initial heuristic-mask result:
 
 - Visual hull:
   - 69,692 occupied voxels out of 884,736 after cleanup;
@@ -812,16 +825,33 @@ Result:
   - 93 glue tabs;
   - page height: 954 mm.
 
+AI-segmentation result:
+
+- Visual hull:
+  - 62,485 occupied voxels out of 1,404,928 after cleanup;
+  - OBJ mesh with 13,108 vertices and 26,212 faces;
+  - watertight mesh.
+- Faceted shell:
+  - 180 target faces -> 180 faces, 92 vertices, watertight;
+  - 320 target faces -> 320 faces, 162 vertices, watertight;
+  - 640 target faces -> 640 faces, 322 vertices, watertight.
+- Connected net:
+  - 320 faces;
+  - 24 islands;
+  - 142 glue tabs;
+  - page height: 501 mm.
+
 Visual read:
 
-- The pipeline technically runs on real phone photos, but the reconstructed shape is not a good bottle.
-- The failure is primarily mask quality: simple color/brightness heuristics over-smoothed the bottle body and did not reliably preserve the neck/cap.
-- This is a strong argument for the AI-assisted route: real user photos need robust object segmentation, quality checks, and capture guidance before visual hull.
-- The object itself is also challenging: glossy dark glass, cluttered background, changing camera height, and reflective highlights.
+- The heuristic-mask run technically worked but was not a good bottle.
+- The AI-segmentation run is recognizable as a bottle: rectangular body, shoulder transition, neck, and cap are visible.
+- The pass is geometric/silhouette recognition only; it does not preserve the Jagermeister label, glass material, or texture identity.
+- This confirms robust AI segmentation should be baseline infrastructure for real user photos, not a later enhancement.
+- The object remains challenging because of glossy dark glass, cluttered background, changing camera height, and reflective highlights.
 
 ### Experiment 17: Printable Plane Strategy
 
-Status: Not started
+Status: Started
 
 Planned strategies:
 
@@ -832,11 +862,13 @@ Planned strategies:
 
 Result:
 
-- TBD
+- The connected-net exporter produced first printable-style SVG nets for Bunny, THU-MVS Dog, Washington Bell Pepper, Washington Coffee Mug, and the real Jagermeister bottle.
+- The Jagermeister AI-segmented 320-face shell exported to `real-jagermeister-10view-ai-isnet-visual-hull-faceted-shell-320-net.svg`.
+- The exporter is still raw: it needs better page tiling, mountain/valley fold styling, part numbering, and assembly order.
 
 ### Experiment 18: Physical Or Rendered Validation
 
-Status: Not started
+Status: Started through rendered validation
 
 Preferred validation:
 
@@ -848,7 +880,8 @@ Fallback validation:
 
 Result:
 
-- TBD
+- Rendered validation is now the default Phase 1 check.
+- The Jagermeister shell preview passes as a recognizable bottle; physical print/cut/assembly has not been tested yet.
 
 ## Current Risks
 
@@ -861,14 +894,15 @@ Result:
 - Image-conditioned mesh APIs may hallucinate shape detail. A text prompt can help semantic features, but it cannot replace geometric evidence.
 - AI segmentation or capture guidance could improve the visual-hull route, but AI-generated geometry can drift away from the user's actual object.
 - Visual hull is weak for handles, holes, loops, thin parts, and concavities. The product should initially guide users toward solid silhouette-driven objects.
-- Real phone-photo tests can fail at mask quality before geometry. Robust AI segmentation is now a critical path item for real user uploads.
+- Real phone-photo tests can fail at mask quality before geometry. Robust AI segmentation is now baseline infrastructure for real user uploads.
+- The current real-phone proof reconstructs silhouette geometry only; texture, labels, and brand identity are out of scope for this path unless a later texture/projection step is added.
 
 ## Next Actions
 
 1. Promote controlled turntable visual hull as the primary non-Tripo image-to-mesh route.
-2. Replace simple heuristic masking with real AI segmentation for user photos.
+2. Treat AI segmentation as the baseline real-photo preprocessing step.
 3. Add capture quality checks: reject cropped, blurry, top-down, duplicate-angle, or badly segmented frames.
 4. Improve capture guidance assumptions: object centered, same distance, full 360-degree coverage, high contrast background, minimal shadows.
-5. Re-run the Jagermeister bottle after AI segmentation to separate mask failure from geometry failure.
-6. Improve connected-net page layout, fold/cut styling, and assembly order after the real-capture mask issue is solved.
+5. Add rough angle estimation or guided capture metadata so the app does not depend on manually authored azimuth values.
+6. Improve connected-net page layout, fold/cut styling, and assembly order.
 7. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.

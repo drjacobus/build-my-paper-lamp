@@ -143,6 +143,14 @@ Initial findings:
   - 200 and 400-face shells stayed watertight;
   - connected 200-face net produced 15 islands and 93 glue tabs;
   - visual shape failed because the heuristic masks did not reliably capture the bottle neck/cap and over-smoothed the silhouette.
+- Proper AI segmentation was added for the Jagermeister real-photo gate:
+  - `rembg` with `isnet-general-use` and CPU ONNX Runtime was installed and verified;
+  - `make-ai-foreground-masks.py` was added for repeatable AI masks and contact-sheet inspection;
+  - AI masks captured the bottle body, shoulders, neck, and cap consistently in the first 10 upright views;
+  - AI-mask visual hull produced a watertight mesh with 13,108 vertices and 26,212 faces;
+  - 180, 320, and 640-face shells stayed watertight;
+  - connected 320-face net produced 24 islands and 142 glue tabs;
+  - visual read passed for a recognizable bottle silhouette, but not label/texture identity.
 
 Current conclusion:
 
@@ -150,14 +158,14 @@ Current conclusion:
 - The faceted shell path is closer to the target paperlamp kit than the rib path.
 - Bunny shows that a cleaner, clearer animal source can preserve recognizable shape through low-poly faceting.
 - The 12-image guided turntable test satisfies the raw Phase 1A requirement under explicit capture constraints: same object, centered, clean/white background, known or estimated angles, and enough silhouette coverage.
-- The remaining blocker is no longer "can 10 to 15 controlled images become a mesh and printable net"; it is "can real user phone images meet those capture constraints reliably enough."
+- The remaining blocker is no longer "can 10 to 15 controlled images become a mesh and printable net"; it is "can real user phone images meet those capture constraints reliably enough, with AI segmentation as a required preprocessing step."
 - COLMAP can recover partial sparse Bunny geometry from rendered images, especially with fixed camera assumptions and relaxed mapper thresholds, but this is not enough by itself because the product needs a usable mesh, not just camera poses and sparse points.
 - Local COLMAP should now be treated as a diagnostic/camera-recovery baseline, not a satisfying Phase 1A image-to-mesh solution.
 - The first viable non-Tripo solution is controlled capture plus silhouette visual hull. It is not arbitrary photo reconstruction, but it gives a practical product constraint: guide the user to capture the object like a turntable scan on a clean background.
 - AI should be treated as an assistant to this geometry-first route, not as the primary source of truth. Good candidate uses are object masking, background cleanup, crop normalization, capture quality checks, rough angle estimation, and optional semantic hints; generated mesh details must still be checked against the input silhouettes.
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 - Object choice matters: solid silhouette-driven forms are good early targets; handles, holes, loops, thin parts, and concavities are weak targets for visual hull and should be filtered out or handled by a later method.
-- Real phone photos need robust AI segmentation or much stronger capture constraints. Simple color/brightness masking is not reliable for glossy dark objects in cluttered backgrounds.
+- Real phone photos need robust AI segmentation plus capture constraints. Simple color/brightness masking is not reliable for glossy dark objects in cluttered backgrounds. The Jagermeister bottle passed only after proper AI segmentation.
 
 Next action:
 
@@ -167,8 +175,8 @@ Next action:
    - THU-MVS Cat/Dog first, because it is the closest match: turntable-like physical figurines with many views and recognizable animal shapes.
    - Washington RGB-D Object Dataset second, because it offers many centered household objects and turntable videos for generalization.
    - BigBIRD third, because it has turntable positions and masks but less paperlamp-like grocery/product objects.
-4. Validate the route on a real captured object with phone images, clean background, and turntable-style coverage.
-5. Add AI assistance only where it improves the geometry-first pipeline: better masks, bad-frame rejection, angle estimation, and capture guidance.
+4. Treat AI segmentation as part of the baseline real-photo pipeline, not an optional polish step.
+5. Add the next AI assists around bad-frame rejection, angle estimation, and capture guidance.
 6. Favor the faceted-shell paperlamp path over rib-only construction unless future evidence says otherwise.
 7. Only research non-Tripo image-to-3D APIs or models if they return downloadable meshes and can beat the controlled visual-hull baseline.
 
