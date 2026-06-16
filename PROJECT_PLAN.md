@@ -515,13 +515,13 @@ If this is not true, do not build the UI yet. Instead, choose one of these actio
 
 Build the user-facing app only after the technical transformation has been proven.
 
-Status as of 2026-06-16: **Phase 2 technical MVP started**
+Status as of 2026-06-16: **Phase 2 technical MVP started, with MacBook-hosted testing first**
 
 Reason:
 
 - The real Jagermeister phone-photo gate produced a recognizable bottle after AI segmentation.
 - The first UI should expose only the proven path: guided 10 to 15 image capture, AI masks, visual hull, faceted shell, and SVG net export.
-- Deployment should start as one Dockerized cloud app so testers can use a link without a developer laptop running.
+- Deployment can run either locally on the MacBook or as one Dockerized cloud app. Current decision: run the tester MVP from the MacBook first, because the owner can keep it online and it avoids early cloud cost.
 
 ### Scope
 
@@ -550,9 +550,16 @@ Reason:
 - Output files are printable or laser-cutter-ready.
 - The app exposes the proven pipeline rather than pretending unfinished steps work.
 
-### First Cloud MVP Deployment
+### First Tester Deployment
 
-Start with a single Docker service:
+Primary path: MacBook-hosted local service.
+
+- Next.js UI and API routes run on the MacBook.
+- Python processing scripts run locally through the `paperlamp-poc` Conda environment.
+- Uploaded images, generated GLB previews, and SVG nets are stored under `~/.paperlamp/jobs`.
+- Phones on the same Wi-Fi can access the app through the Mac's local IP.
+
+Fallback cloud path: single Docker service.
 
 - Next.js UI and API routes.
 - Python processing scripts in the same container.
@@ -604,4 +611,4 @@ Produce one complete proof-of-concept folder containing:
 - Rendered or physical assembled result
 - Short report explaining whether the result is good enough to justify UI development
 
-The first version of this now exists as a Docker-oriented technical MVP. The next truth test is a deployed private testing link that can process a real object without the developer laptop running.
+The first version now exists as a technical MVP that can run locally on the MacBook or in Docker. The next truth test is letting a tester complete the full flow against the MacBook-hosted app.

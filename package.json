@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:mac": "bash scripts/start-mac-local.sh",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

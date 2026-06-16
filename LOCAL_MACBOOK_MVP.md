@@ -1,0 +1,67 @@
+# Local MacBook MVP
+
+This is the current preferred tester setup: your MacBook runs the full app and processing pipeline.
+
+```text
+phone/browser -> MacBook Next.js app -> local Python pipeline -> ~/.paperlamp/jobs
+```
+
+## Start The App
+
+From the repo root:
+
+```bash
+npm run dev:mac
+```
+
+The script sets:
+
+- `LAMP_JOB_DIR=$HOME/.paperlamp/jobs`
+- `PYTHON_BIN=/opt/anaconda3/envs/paperlamp-poc/bin/python`
+- host `0.0.0.0`
+- port `3000`
+
+Open on the Mac:
+
+```text
+http://localhost:3000
+```
+
+Open from a phone on the same Wi-Fi:
+
+```text
+http://YOUR_MAC_LOCAL_IP:3000
+```
+
+Find the Mac IP with:
+
+```bash
+ipconfig getifaddr en0
+```
+
+## Requirements
+
+- MacBook stays awake while testers use it.
+- Same Wi-Fi network for phone testing, unless you add a tunnel.
+- POC Python environment exists at `/opt/anaconda3/envs/paperlamp-poc`.
+- The first segmentation run may be slower if the model cache is cold.
+
+## Optional Public Link
+
+For testers outside your Wi-Fi, use a tunnel such as ngrok or Cloudflare Tunnel pointing to:
+
+```text
+http://localhost:3000
+```
+
+Keep that tunnel private for now. The MVP has no authentication.
+
+## Where Files Go
+
+Uploaded images and generated results are stored under:
+
+```text
+~/.paperlamp/jobs
+```
+
+Delete old test jobs from that folder when disk usage grows.

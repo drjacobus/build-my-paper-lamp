@@ -175,6 +175,7 @@ npm run start
 
 ### For Developers
 - **[PROJECT_PLAN.md](PROJECT_PLAN.md)** — High-level project overview
+- **[LOCAL_MACBOOK_MVP.md](LOCAL_MACBOOK_MVP.md)** — Run the tester MVP from your MacBook
 - **[CLOUD_MVP.md](CLOUD_MVP.md)** — Single-container cloud MVP deployment
 - **[TECHNICAL_SPEC.md](TECHNICAL_SPEC.md)** — Detailed technical architecture
 - **[API_DOCUMENTATION.md](docs/API.md)** — Backend endpoint reference
