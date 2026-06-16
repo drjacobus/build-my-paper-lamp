@@ -2,10 +2,8 @@
 
 import { useCallback, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import dynamic from 'next/dynamic'
-
-const ModelViewer = dynamic(() => import('@/components/ModelViewer'), { ssr: false })
-const VectorPreview = dynamic(() => import('@/components/VectorPreview'), { ssr: false })
+import ModelViewer from '@/components/ModelViewer'
+import VectorPreview from '@/components/VectorPreview'
 
 function ResultsContent() {
   const params = useSearchParams()
