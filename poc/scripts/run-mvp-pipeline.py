@@ -63,6 +63,7 @@ def main() -> None:
     parser.add_argument("--face-count", type=int, default=320)
     parser.add_argument("--python", default=sys.executable)
     parser.add_argument("--skip-segmentation", action="store_true")
+    parser.add_argument("--colored-svg", action="store_true")
     args = parser.parse_args()
 
     script_dir = Path(__file__).resolve().parent
@@ -147,6 +148,10 @@ def main() -> None:
             "260",
             "--max-faces-per-island",
             "32",
+            "--color-mode",
+            "sampled" if args.colored_svg else "plain",
+            "--source-image-dir",
+            str(image_dir),
         ]
     )
 

@@ -87,7 +87,11 @@ export function startSegmentation(jobId: string) {
   })
 }
 
-export function startLocalPipeline(jobId: string, complexity: 'simple' | 'medium' | 'detailed' = 'medium') {
+export function startLocalPipeline(
+  jobId: string,
+  complexity: 'simple' | 'medium' | 'detailed' = 'medium',
+  coloredSvg = false,
+) {
   const dir = jobDir(jobId)
   const script = path.join(process.cwd(), 'poc/scripts/run-mvp-pipeline.py')
   const stderrTail: string[] = []
@@ -114,6 +118,7 @@ export function startLocalPipeline(jobId: string, complexity: 'simple' | 'medium
     String(resolution),
     '--face-count',
     String(faceCount),
+    ...(coloredSvg ? ['--colored-svg'] : []),
   ], {
     cwd: process.cwd(),
     env: process.env,

@@ -17,6 +17,7 @@ function ReviewContent() {
   const jobId = params.get('jobId') ?? ''
   const contactSheetUrl = params.get('contactSheetUrl') ?? (jobId ? `/api/contact-sheet?jobId=${encodeURIComponent(jobId)}` : '')
   const [complexity, setComplexity] = useState<Complexity>('medium')
+  const [coloredSvg, setColoredSvg] = useState(false)
   const [starting, setStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -28,7 +29,7 @@ function ReviewContent() {
       const res = await fetch('/api/process', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jobId, complexity }),
+        body: JSON.stringify({ jobId, complexity, coloredSvg }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => null)
@@ -99,6 +100,21 @@ function ReviewContent() {
           ))}
         </div>
       </div>
+
+      <label className="flex items-start gap-3 bg-white rounded-2xl p-4 border border-amber-100 mb-5">
+        <input
+          type="checkbox"
+          checked={coloredSvg}
+          onChange={(event) => setColoredSvg(event.target.checked)}
+          className="mt-1 accent-amber-500"
+        />
+        <span>
+          <span className="block text-sm font-bold text-amber-900">Colored SVG</span>
+          <span className="block text-xs text-amber-600 mt-1">
+            Adds approximate sampled colors to faces. Use plain SVG for easiest cutting.
+          </span>
+        </span>
+      </label>
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">

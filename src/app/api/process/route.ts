@@ -4,7 +4,7 @@ import { startLocalPipeline } from '@/lib/localPipeline'
 
 export async function POST(req: NextRequest) {
   try {
-    const { jobId, complexity = 'medium' } = await req.json()
+    const { jobId, complexity = 'medium', coloredSvg = false } = await req.json()
     if (!jobId) return NextResponse.json({ error: 'jobId required' }, { status: 400 })
 
     const job = getJob(jobId)
@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid complexity' }, { status: 400 })
     }
 
-    startLocalPipeline(jobId, complexity)
+    startLocalPipeline(jobId, complexity, Boolean(coloredSvg))
     return NextResponse.json({ jobId, status: job.status })
   } catch (err) {
     console.error('Process error:', err)

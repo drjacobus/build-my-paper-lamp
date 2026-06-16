@@ -11,6 +11,7 @@ from pathlib import Path
 
 import numpy as np
 import trimesh
+from PIL import Image
 from shapely.geometry import Polygon
 
 
@@ -216,6 +217,42 @@ def face_edge_pairs(face: np.ndarray) -> list[tuple[int, int, int, int]]:
     ]
 
 
+def html_color(rgb: np.ndarray) -> str:
+    values = np.clip(np.rint(rgb), 0, 255).astype(np.uint8)
+    return f"#{values[0]:02x}{values[1]:02x}{values[2]:02x}"
+
+
+def load_source_palette(image_dir: Path | None) -> list[np.ndarray]:
+    if image_dir is None:
+        return []
+    colors: list[np.ndarray] = []
+    for image_path in sorted(image_dir.iterdir()):
+        if image_path.suffix.lower() not in {".jpg", ".jpeg", ".png"}:
+            continue
+        image = Image.open(image_path).convert("RGB").resize((96, 96), Image.Resampling.LANCZOS)
+        pixels = np.asarray(image, dtype=np.float64).reshape(-1, 3)
+        brightness = pixels.mean(axis=1)
+        saturation = pixels.max(axis=1) - pixels.min(axis=1)
+        foregroundish = (brightness > 25) & (brightness < 245) & (saturation > 8)
+        sample = pixels[foregroundish] if foregroundish.any() else pixels
+        colors.append(np.median(sample, axis=0))
+    return colors
+
+
+def assign_face_colors(mesh: trimesh.Trimesh, palette: list[np.ndarray]) -> list[str]:
+    if not palette:
+        return ["none"] * len(mesh.faces)
+
+    palette_array = np.vstack(palette)
+    normals = mesh.face_normals
+    azimuths = (np.arctan2(normals[:, 1], normals[:, 0]) + 2.0 * np.pi) % (2.0 * np.pi)
+    indexes = np.floor(azimuths / (2.0 * np.pi) * len(palette_array)).astype(int) % len(palette_array)
+    colors = palette_array[indexes]
+    light = 0.82 + 0.18 * np.clip(normals[:, 2], -0.25, 1.0)
+    colors = np.clip(colors * light[:, None], 0, 255)
+    return [html_color(color) for color in colors]
+
+
 def render_svg(
     mesh: trimesh.Trimesh,
     islands: list[NetIsland],
@@ -226,6 +263,7 @@ def render_svg(
     margin: float,
     gap: float,
     tab_depth: float,
+    face_colors: list[str],
 ) -> tuple[int, int]:
     cursor_x = margin
     cursor_y = margin + 14.0
@@ -265,7 +303,8 @@ def render_svg(
                         tabs += 1
 
             points_attr = " ".join(f"{x:.2f},{y:.2f}" for x, y in points)
-            content.append(f'<polygon class="cut-face" points="{points_attr}" />')
+            fill = face_colors[placed.face_index] if face_colors else "none"
+            content.append(f'<polygon class="cut-face" points="{points_attr}" fill="{fill}" />')
             centroid = points.mean(axis=0)
             content.append(text_element(float(centroid[0]), float(centroid[1]), f"F{placed.face_index + 1}", size=2.0))
 
@@ -297,7 +336,7 @@ def render_svg(
         '<rect x="0" y="0" width="100%" height="100%" fill="white"/>',
         "<style>",
         "polygon, line { vector-effect: non-scaling-stroke; }",
-        ".cut-face { fill: none; stroke: #111; stroke-width: 0.25; }",
+        ".cut-face { stroke: #111; stroke-width: 0.25; }",
         ".glue-tab { fill: none; stroke: #d97706; stroke-width: 0.22; }",
         ".legend { font-family: monospace; font-size: 3px; fill: #444; }",
         "</style>",
@@ -322,6 +361,8 @@ def main() -> None:
     parser.add_argument("--gap-mm", type=float, default=8.0)
     parser.add_argument("--tab-depth-mm", type=float, default=5.0)
     parser.add_argument("--max-faces-per-island", type=int, default=24)
+    parser.add_argument("--color-mode", choices=("plain", "sampled"), default="plain")
+    parser.add_argument("--source-image-dir", type=Path)
     args = parser.parse_args()
 
     mesh = trimesh.load(args.input_mesh, force="mesh")
@@ -336,6 +377,11 @@ def main() -> None:
     islands = unfold_islands(mesh, scale=scale, max_faces_per_island=args.max_faces_per_island)
     edge_ids = build_edge_ids(mesh.faces)
     _, edge_to_faces = build_adjacency(mesh.faces)
+    face_colors = (
+        assign_face_colors(mesh, load_source_palette(args.source_image_dir))
+        if args.color_mode == "sampled"
+        else ["none"] * len(mesh.faces)
+    )
     tabs, page_height = render_svg(
         mesh=mesh,
         islands=islands,
@@ -346,6 +392,7 @@ def main() -> None:
         margin=args.margin_mm,
         gap=args.gap_mm,
         tab_depth=args.tab_depth_mm,
+        face_colors=face_colors,
     )
 
     island_sizes = [len(island.faces) for island in islands]
