@@ -12,6 +12,7 @@ interface Props {
 export default function Camera({ onPhotos, photos }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [cameraReady, setCameraReady] = useState(false)
   const [permissionDenied, setPermissionDenied] = useState(false)
@@ -26,6 +27,10 @@ export default function Camera({ onPhotos, photos }: Props) {
 
   async function startCamera() {
     try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setPermissionDenied(true)
+        return
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } },
         audio: false,
@@ -38,6 +43,40 @@ export default function Camera({ onPhotos, photos }: Props) {
     } catch {
       setPermissionDenied(true)
     }
+  }
+
+  async function handleFiles(files: FileList | null) {
+    if (!files?.length) return
+
+    const remaining = Math.max(0, 15 - photos.length)
+    const selected = Array.from(files)
+      .filter((file) => file.type.startsWith('image/'))
+      .slice(0, remaining)
+
+    const loaded = await Promise.all(
+      selected.map(
+        (file) =>
+          new Promise<CapturedPhoto>((resolve) => {
+            const reader = new FileReader()
+            reader.onload = () => {
+              resolve({
+                id: uuidv4(),
+                dataUrl: String(reader.result),
+                blob: file,
+                timestamp: Date.now(),
+              })
+            }
+            reader.readAsDataURL(file)
+          })
+      )
+    )
+
+    onPhotos([...photos, ...loaded].slice(0, 15))
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  function choosePhotos() {
+    fileInputRef.current?.click()
   }
 
   const capture = useCallback(() => {
@@ -62,18 +101,42 @@ export default function Camera({ onPhotos, photos }: Props) {
 
   if (permissionDenied) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 gap-4 text-center px-6">
+      <div className="flex flex-col items-center justify-center min-h-64 gap-4 text-center px-6">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(event) => handleFiles(event.target.files)}
+        />
         <div className="text-5xl">📷</div>
         <p className="text-amber-800 font-medium">Camera access denied</p>
         <p className="text-sm text-amber-600">
-          Please allow camera access in your browser settings and reload the page.
+          Local network camera access can be blocked by the browser. Choose 10–15 photos from your library instead.
         </p>
+        <button
+          type="button"
+          onClick={choosePhotos}
+          disabled={photos.length >= 15}
+          className="bg-amber-500 text-white font-bold px-6 py-3 rounded-2xl shadow disabled:bg-amber-200 disabled:text-amber-400"
+        >
+          Choose Photos
+        </button>
       </div>
     )
   }
 
   return (
     <div className="relative w-full">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(event) => handleFiles(event.target.files)}
+      />
       <div className="relative bg-black rounded-2xl overflow-hidden aspect-[3/4]">
         <video
           ref={videoRef}
@@ -115,6 +178,14 @@ export default function Camera({ onPhotos, photos }: Props) {
       <p className="text-center text-sm text-amber-700 mt-3">
         Walk around your object once — aim for 10–15 clean photos
       </p>
+      <button
+        type="button"
+        onClick={choosePhotos}
+        disabled={photos.length >= 15}
+        className="mt-4 w-full border-2 border-amber-300 text-amber-700 font-semibold py-3 rounded-2xl disabled:opacity-40"
+      >
+        Choose from Photos
+      </button>
     </div>
   )
 }
