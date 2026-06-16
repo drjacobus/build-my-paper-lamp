@@ -151,16 +151,63 @@ def make_mask(image_path: Path, threshold: int, close_radius: int, mask_mode: st
     return mask
 
 
-def load_view_mask(view: TurntableView, threshold: int, close_radius: int, mask_mode: str) -> np.ndarray:
-    if view.mask_path is None:
-        return make_mask(view.path, threshold, close_radius, mask_mode)
+def normalize_mask_crop(mask: np.ndarray, padding_ratio: float) -> np.ndarray:
+    rows, cols = np.nonzero(mask)
+    if len(rows) == 0:
+        return mask
 
-    mask_image = np.asarray(Image.open(view.mask_path).convert("L"), dtype=np.uint8)
-    mask = mask_image > threshold
+    y_min, y_max = int(rows.min()), int(rows.max()) + 1
+    x_min, x_max = int(cols.min()), int(cols.max()) + 1
+    box_height = y_max - y_min
+    box_width = x_max - x_min
+    side = int(np.ceil(max(box_width, box_height) * (1.0 + padding_ratio * 2.0)))
+    center_y = (y_min + y_max) / 2.0
+    center_x = (x_min + x_max) / 2.0
+
+    src_y0 = int(np.floor(center_y - side / 2.0))
+    src_x0 = int(np.floor(center_x - side / 2.0))
+    src_y1 = src_y0 + side
+    src_x1 = src_x0 + side
+
+    square = np.zeros((side, side), dtype=bool)
+    copy_y0 = max(0, src_y0)
+    copy_x0 = max(0, src_x0)
+    copy_y1 = min(mask.shape[0], src_y1)
+    copy_x1 = min(mask.shape[1], src_x1)
+    dst_y0 = copy_y0 - src_y0
+    dst_x0 = copy_x0 - src_x0
+    square[dst_y0 : dst_y0 + copy_y1 - copy_y0, dst_x0 : dst_x0 + copy_x1 - copy_x0] = mask[
+        copy_y0:copy_y1,
+        copy_x0:copy_x1,
+    ]
+
+    resized = Image.fromarray((square.astype(np.uint8) * 255), mode="L").resize(
+        (mask.shape[1], mask.shape[0]),
+        Image.Resampling.NEAREST,
+    )
+    return np.asarray(resized, dtype=np.uint8) > 0
+
+
+def load_view_mask(
+    view: TurntableView,
+    threshold: int,
+    close_radius: int,
+    mask_mode: str,
+    normalize_crop: bool,
+    crop_padding: float,
+) -> np.ndarray:
+    if view.mask_path is None:
+        mask = make_mask(view.path, threshold, close_radius, mask_mode)
+    else:
+        mask_image = np.asarray(Image.open(view.mask_path).convert("L"), dtype=np.uint8)
+        mask = mask_image > threshold
+
     if close_radius > 0:
         footprint = morphology.disk(close_radius)
         mask = morphology.closing(mask, footprint)
         mask = morphology.dilation(mask, footprint)
+    if normalize_crop:
+        mask = normalize_mask_crop(mask, crop_padding)
     return mask
 
 
@@ -237,6 +284,8 @@ def main() -> None:
     parser.add_argument("--mask-threshold", type=int, default=18)
     parser.add_argument("--mask-mode", choices=("white", "background"), default="white")
     parser.add_argument("--mask-close-radius", type=int, default=2)
+    parser.add_argument("--normalize-mask-crop", action="store_true")
+    parser.add_argument("--crop-padding", type=float, default=0.20)
     parser.add_argument("--min-consensus", type=float, default=0.9)
     parser.add_argument("--no-clean", action="store_true")
     args = parser.parse_args()
@@ -250,7 +299,14 @@ def main() -> None:
     valid_views = np.zeros(len(points), dtype=np.uint16)
 
     for view in views:
-        mask = load_view_mask(view, args.mask_threshold, args.mask_close_radius, args.mask_mode)
+        mask = load_view_mask(
+            view,
+            args.mask_threshold,
+            args.mask_close_radius,
+            args.mask_mode,
+            args.normalize_mask_crop,
+            args.crop_padding,
+        )
         u, v, inside = project_orthographic(points, view, mask.shape, args.projection_bound)
         valid_views[inside] += 1
         visible = np.zeros(len(points), dtype=bool)
@@ -286,6 +342,8 @@ def main() -> None:
         projection_bound=args.projection_bound,
         mask_threshold=args.mask_threshold,
         mask_mode=args.mask_mode,
+        normalize_mask_crop=args.normalize_mask_crop,
+        crop_padding=args.crop_padding,
         min_consensus=args.min_consensus,
         views=len(views),
     )

@@ -84,6 +84,13 @@ Each tool or pipeline must be evaluated against the same checklist:
   - 100-face and 200-face shells both stayed watertight;
   - connected 100-face net produced 8 islands and 43 glue tabs;
   - visual read: better than the mug and confirms solid silhouette-driven objects are the right first target class.
+- Added mask-based crop normalization:
+  - Bell Pepper crop-normalized visual hull produced a watertight mesh with 17,635 vertices and 35,270 faces;
+  - Bell Pepper 200, 400, and 800-face shells stayed watertight;
+  - Bell Pepper connected 200-face net produced 12 islands and 82 glue tabs;
+  - Coffee Mug crop-normalized visual hull produced a watertight mesh with 17,767 vertices and 35,546 faces;
+  - Coffee Mug 200 and 400-face shells stayed watertight;
+  - visual read: crop normalization improves object scale/detail and helps the mug handle silhouette, but concavity remains a core visual-hull limitation.
 
 ### 2026-06-15: Phase 1 Setup
 

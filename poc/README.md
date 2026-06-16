@@ -211,4 +211,27 @@ images-12-turntable/view_e+14_000.png,0,14
 images-12-turntable/view_e+14_004.png,60,14
 ```
 
+Manifests can also include dataset-provided or AI-generated masks:
+
+```csv
+image,mask,azimuth,elevation
+photo_001.png,mask_001.png,0,10
+photo_002.png,mask_002.png,30,10
+```
+
+When the object is small in the frame, normalize each mask crop before visual-hull carving:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/build-turntable-visual-hull.py \
+  --image-dir poc/input/washington-rgbd-bell-pepper-1 \
+  --view-manifest poc/input/washington-rgbd-bell-pepper-1/turntable-12-view-manifest.csv \
+  --output-dir poc/output/washington-rgbd-bell-pepper-1/reconstruction/turntable-visual-hull-12views-cropnorm \
+  --name-prefix washington-bell-pepper-1-12view-cropnorm \
+  --resolution 96 \
+  --min-consensus 0.90 \
+  --mask-threshold 1 \
+  --normalize-mask-crop \
+  --crop-padding 0.25
+```
+
 For the future app, AI should assist this geometry-first path rather than replace it. The most useful AI jobs are object masking, background cleanup, bad-photo rejection, rough angle estimation, and capture guidance.

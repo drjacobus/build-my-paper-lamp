@@ -726,7 +726,60 @@ Result:
   - page height: 855 mm.
 - Visual read: recognizability is better than the mug because the bell pepper is a solid silhouette-driven object. The result confirms that early product capture should prefer solid organic shapes and avoid handles, holes, loops, thin parts, and deep concavities.
 
-### Experiment 15: Printable Plane Strategy
+### Experiment 15: Mask-Based Crop Normalization
+
+Status: Pass as preprocessing improvement
+
+Goal:
+
+- Simulate the first useful AI-assisted preprocessing step: produce clean object masks, crop tightly around the foreground object, normalize scale, and feed the normalized masks into the geometry-first visual-hull pipeline.
+
+Implementation:
+
+- Added `--normalize-mask-crop` to `build-turntable-visual-hull.py`.
+- Added `--crop-padding` to control foreground padding before square resize.
+- The operation uses masks only, so it works with dataset masks now and can later work with AI-generated masks from user photos.
+
+Bell Pepper result:
+
+- Command used `--normalize-mask-crop --crop-padding 0.25`.
+- Visual hull:
+  - 103,542 occupied voxels out of 884,736 after cleanup;
+  - OBJ mesh with 17,635 vertices and 35,270 faces;
+  - watertight mesh.
+- Faceted shell:
+  - 200 target faces -> 200 faces, 102 vertices, watertight;
+  - 400 target faces -> 400 faces, 202 vertices, watertight;
+  - 800 target faces -> 800 faces, 402 vertices, watertight.
+- Connected net:
+  - 200 faces;
+  - 12 islands;
+  - 82 glue tabs;
+  - page height: 777 mm.
+
+Coffee Mug result:
+
+- Command used `--normalize-mask-crop --crop-padding 0.25`.
+- Visual hull:
+  - 87,498 occupied voxels out of 884,736 after cleanup;
+  - OBJ mesh with 17,767 vertices and 35,546 faces;
+  - watertight mesh.
+- Faceted shell:
+  - 200 target faces -> 200 faces, 100 vertices, watertight;
+  - 400 target faces -> 400 faces, 200 vertices, watertight.
+- Connected net:
+  - 200 faces;
+  - 13 islands;
+  - 84 glue tabs;
+  - page height: 940 mm.
+
+Interpretation:
+
+- Crop normalization materially improves scale/detail for objects that occupy a small portion of the camera frame.
+- It is a direct bridge to AI-assisted masking: AI can provide the masks; this deterministic step normalizes them before geometry.
+- It helps the mug handle silhouette, but it does not remove the fundamental visual-hull weakness around concavities and holes.
+
+### Experiment 16: Printable Plane Strategy
 
 Status: Not started
 
@@ -741,7 +794,7 @@ Result:
 
 - TBD
 
-### Experiment 16: Physical Or Rendered Validation
+### Experiment 17: Physical Or Rendered Validation
 
 Status: Not started
 

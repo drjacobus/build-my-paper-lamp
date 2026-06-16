@@ -128,6 +128,13 @@ Initial findings:
   - 100-face and 200-face shells both watertight;
   - connected 100-face SVG net with 8 islands and 43 glue tabs;
   - visual recognizability is better than the mug because the object is solid and silhouette-driven.
+- Mask-based crop normalization was added as the first AI-assist-compatible preprocessing step:
+  - it crops each mask around the foreground object, pads it to a square, and scales it back to the working frame;
+  - Washington Bell Pepper crop-normalized visual hull produced 17,635 vertices and 35,270 faces, watertight;
+  - 200, 400, and 800-face Bell Pepper shells all stayed watertight;
+  - connected 200-face Bell Pepper net produced 12 islands and 82 glue tabs;
+  - Washington Coffee Mug crop-normalized visual hull produced 17,767 vertices and 35,546 faces, watertight;
+  - 200 and 400-face Coffee Mug shells stayed watertight, and the handle silhouette improved.
 
 Current conclusion:
 
@@ -139,7 +146,7 @@ Current conclusion:
 - COLMAP can recover partial sparse Bunny geometry from rendered images, especially with fixed camera assumptions and relaxed mapper thresholds, but this is not enough by itself because the product needs a usable mesh, not just camera poses and sparse points.
 - Local COLMAP should now be treated as a diagnostic/camera-recovery baseline, not a satisfying Phase 1A image-to-mesh solution.
 - The first viable non-Tripo solution is controlled capture plus silhouette visual hull. It is not arbitrary photo reconstruction, but it gives a practical product constraint: guide the user to capture the object like a turntable scan on a clean background.
-- AI should be treated as an assistant to this geometry-first route, not as the primary source of truth. Good candidate uses are object masking, background cleanup, capture quality checks, rough angle estimation, and optional semantic hints; generated mesh details must still be checked against the input silhouettes.
+- AI should be treated as an assistant to this geometry-first route, not as the primary source of truth. Good candidate uses are object masking, background cleanup, crop normalization, capture quality checks, rough angle estimation, and optional semantic hints; generated mesh details must still be checked against the input silhouettes.
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 - Object choice matters: solid silhouette-driven forms are good early targets; handles, holes, loops, thin parts, and concavities are weak targets for visual hull and should be filtered out or handled by a later method.
 
