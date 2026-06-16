@@ -32,6 +32,7 @@ export default function Camera({ onPhotos, photos }: Props) {
   const streamRef = useRef<MediaStream | null>(null)
   const [cameraReady, setCameraReady] = useState(false)
   const [permissionDenied, setPermissionDenied] = useState(false)
+  const [cameraLoading, setCameraLoading] = useState(true)
   const [flash, setFlash] = useState(false)
 
   useEffect(() => {
@@ -43,8 +44,11 @@ export default function Camera({ onPhotos, photos }: Props) {
 
   async function startCamera() {
     try {
+      setCameraLoading(true)
+      setPermissionDenied(false)
       if (!navigator.mediaDevices?.getUserMedia) {
         setPermissionDenied(true)
+        setCameraLoading(false)
         return
       }
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -54,10 +58,18 @@ export default function Camera({ onPhotos, photos }: Props) {
       streamRef.current = stream
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        videoRef.current.onloadedmetadata = () => setCameraReady(true)
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play().catch(() => undefined)
+          setCameraReady(true)
+          setCameraLoading(false)
+        }
       }
+      setCameraReady(true)
+      setCameraLoading(false)
     } catch {
       setPermissionDenied(true)
+      setCameraReady(false)
+      setCameraLoading(false)
     }
   }
 
@@ -96,8 +108,17 @@ export default function Camera({ onPhotos, photos }: Props) {
   }
 
   const capture = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current) return
+    if (!videoRef.current || !canvasRef.current) {
+      startCamera()
+      return
+    }
     const video = videoRef.current
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      video.play().catch(() => undefined)
+      setCameraReady(false)
+      setTimeout(() => setCameraReady(true), 300)
+      return
+    }
     const canvas = canvasRef.current
     canvas.width = video.videoWidth
     canvas.height = video.videoHeight
@@ -186,12 +207,19 @@ export default function Camera({ onPhotos, photos }: Props) {
           autoPlay
           playsInline
           muted
+          onCanPlay={() => {
+            setCameraReady(true)
+            setCameraLoading(false)
+          }}
           className="w-full h-full object-cover"
         />
         {flash && <div className="absolute inset-0 bg-white opacity-60 pointer-events-none" />}
-        {!cameraReady && (
+        {cameraLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black">
-            <div className="w-8 h-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
+              <div className="text-xs text-amber-100">Starting camera…</div>
+            </div>
           </div>
         )}
         {/* Photo count badge */}
@@ -215,11 +243,11 @@ export default function Camera({ onPhotos, photos }: Props) {
       <div className="flex justify-center mt-6">
         <button
           onClick={capture}
-          disabled={!cameraReady || done}
+          disabled={done}
           className="w-20 h-20 rounded-full bg-white border-4 border-amber-400 shadow-lg active:scale-95 transition-transform disabled:opacity-40 flex items-center justify-center"
           aria-label="Take photo"
         >
-          <div className="w-14 h-14 rounded-full bg-amber-400" />
+          <div className={`w-14 h-14 rounded-full ${cameraReady ? 'bg-amber-400' : 'bg-amber-200'}`} />
         </button>
       </div>
 
