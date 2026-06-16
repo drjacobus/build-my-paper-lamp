@@ -90,7 +90,7 @@ export default function Camera({ onPhotos, photos }: Props) {
         )}
         {/* Photo count badge */}
         <div className="absolute top-3 right-3 bg-black/60 text-white text-sm font-bold px-3 py-1 rounded-full">
-          {photos.length} / 50
+          {photos.length} / 15
         </div>
         {/* Crosshair guide */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -104,7 +104,7 @@ export default function Camera({ onPhotos, photos }: Props) {
       <div className="flex justify-center mt-6">
         <button
           onClick={capture}
-          disabled={!cameraReady || photos.length >= 50}
+          disabled={!cameraReady || photos.length >= 15}
           className="w-20 h-20 rounded-full bg-white border-4 border-amber-400 shadow-lg active:scale-95 transition-transform disabled:opacity-40 flex items-center justify-center"
           aria-label="Take photo"
         >
@@ -113,7 +113,7 @@ export default function Camera({ onPhotos, photos }: Props) {
       </div>
 
       <p className="text-center text-sm text-amber-700 mt-3">
-        Walk around your object — aim for 15–50 photos from all angles
+        Walk around your object once — aim for 10–15 clean photos
       </p>
     </div>
   )

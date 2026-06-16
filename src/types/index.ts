@@ -14,6 +14,8 @@ export interface Job {
   step: string
   error?: string
   modelUrl?: string
+  modelPath?: string
+  svgPath?: string
   svgData?: string
   photoCount?: number
   createdAt: number

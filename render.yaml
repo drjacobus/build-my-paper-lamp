@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: build-my-paper-lamp-mvp
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    disk:
+      name: lamp-jobs
+      mountPath: /data
+      sizeGB: 10
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LAMP_JOB_DIR
+        value: /data/lamp-jobs
+      - key: PYTHON_BIN
+        value: python3

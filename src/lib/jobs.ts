@@ -1,11 +1,11 @@
-// Simple file-based job store using /tmp — works for MVP/single-instance deployments.
-// For multi-instance production, swap this for Vercel KV or Upstash Redis.
+// Simple file-based job store. Works for the single-container MVP.
+// For multi-instance production, swap this for Postgres/Redis plus object storage.
 
 import fs from 'fs'
 import path from 'path'
 import { Job, JobStatus } from '@/types'
 
-const JOB_DIR = '/tmp/lamp-jobs'
+export const JOB_DIR = process.env.LAMP_JOB_DIR || '/tmp/lamp-jobs'
 
 function ensureDir() {
   if (!fs.existsSync(JOB_DIR)) fs.mkdirSync(JOB_DIR, { recursive: true })

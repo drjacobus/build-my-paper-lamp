@@ -61,7 +61,7 @@ function ResultsContent() {
         <a href="/" className="text-amber-600 text-2xl leading-none">←</a>
         <div>
           <h1 className="text-lg font-bold text-amber-900">Your Lamp Design</h1>
-          <p className="text-xs text-amber-600">3D model & laser-cutter SVG</p>
+          <p className="text-xs text-amber-600">3D shell & printable SVG net</p>
         </div>
       </div>
 
@@ -81,7 +81,7 @@ function ResultsContent() {
             tab === 'svg' ? 'bg-white text-amber-900 shadow-sm' : 'text-amber-600'
           }`}
         >
-          SVG Outline {svgData && '✓'}
+          SVG Net {svgData && '✓'}
         </button>
       </div>
 
@@ -108,13 +108,13 @@ function ResultsContent() {
       {tab === '3d' && !svgData && (
         <div className="bg-amber-100 rounded-2xl p-4 mb-5 text-center">
           <p className="text-sm text-amber-800 mb-3">
-            Ready to generate your laser-cutter SVG?
+            Ready to inspect the printable SVG net?
           </p>
           <button
             onClick={() => setTab('svg')}
             className="bg-amber-500 text-white font-semibold px-6 py-2.5 rounded-xl text-sm"
           >
-            Generate SVG Outline →
+            Show SVG Net →
           </button>
         </div>
       )}
@@ -143,7 +143,7 @@ function ResultsContent() {
         <ol className="text-xs text-amber-700 space-y-1 list-decimal list-inside">
           <li>Open in Inkscape or Adobe Illustrator</li>
           <li>Scale to your desired lamp size</li>
-          <li>Send to a laser cutter (3mm cardstock works great)</li>
+          <li>Send to a laser cutter or print as a cutting template</li>
           <li>Cut, score fold lines, and glue</li>
           <li>Add a small LED light inside — done! 🏮</li>
         </ol>

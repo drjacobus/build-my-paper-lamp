@@ -1,24 +1,24 @@
 # Build My Paper Lamp 🦜
 
-**Transform any object into a custom DIY paper lamp in minutes!**
+**Turn guided photos of one object into a low-poly printable paper model.**
 
-Take photos of a dog, toucan, or any object → AI converts it to 3D → Generate vector outlines → Print & cut with laser cutter → Assemble into a glowing paper lamp.
+Take 10-15 photos around one object -> AI segmentation -> visual-hull mesh -> faceted shell -> connected SVG net for printing or cutting.
 
-🚀 **[Try the App](https://build-my-paper-lamp.vercel.app)** (Coming Soon)
+The current MVP is a technical tester build. It is honest about what works: recognizable silhouette geometry, not exact texture or label reconstruction.
 
 ---
 
 ## What is This?
 
-A web app that simplifies the entire paper lamp creation workflow:
+A web app that wraps the proven Phase 1 pipeline:
 
-1. **📸 Capture:** Take 15-50 photos of your object with your phone
-2. **🤖 Process:** AI scans photos → creates 3D model
-3. **📐 Extract:** Vector outline is automatically generated
-4. **🖨️ Download:** Get a laser-cutter-ready SVG file
-5. **✂️ Make:** Print, cut, glue, add light → Done!
+1. **Capture:** Take 10-15 guided photos around one object.
+2. **Segment:** AI isolates the object from the background.
+3. **Reconstruct:** A visual-hull mesh is generated from the silhouettes.
+4. **Simplify:** The mesh becomes a low-poly faceted shell.
+5. **Export:** A connected SVG net is generated for printing or cutting.
 
-**No 3D modeling skills required.** No Blender. No laser cutter software knowledge needed. Just photos → app → SVG → laser cutter.
+**No 3D modeling skills required.** The app still needs guided capture and works best with solid, silhouette-driven objects.
 
 ---
 
@@ -26,12 +26,14 @@ A web app that simplifies the entire paper lamp creation workflow:
 
 ### MVP (Phase 1)
 - ✅ Real-time camera capture on mobile
-- ✅ AI-powered 3D scanning (KIRI Engine)
-- ✅ Automatic vector extraction (SketchEdge)
+- ✅ AI foreground segmentation
+- ✅ Visual-hull mesh generation
+- ✅ Low-poly faceted shell generation
+- ✅ Connected SVG net export
 - ✅ Live progress tracking
 - ✅ 3D model preview (interactive)
 - ✅ SVG vector preview
-- ✅ One-click download (laser-ready)
+- ✅ One-click SVG download
 - ✅ Mobile-first design
 - ✅ Works on iOS + Android
 
@@ -58,26 +60,24 @@ A web app that simplifies the entire paper lamp creation workflow:
 ```
 📱 YOUR PHONE
     ↓
-  📸 Take 15-50 photos (walk around the object)
+  📸 Take 10-15 photos (one full turn around the object)
     ↓
 💾 Photos stored locally in browser
     ↓
 🚀 Click "Process" → upload to server
     ↓
-🤖 KIRI Engine API
-    • Photogrammetry + AI
-    • Generates 3D model (OBJ/GLB)
-    • 2-3 minutes
+🤖 AI segmentation
+    • Generates clean foreground masks
+    • Preserves object silhouette
     ↓
-🎨 SketchEdge API
-    • Vector outline extraction
-    • Silhouette edge detection
-    • Generates SVG (laser-ready)
-    • 30-60 seconds
+📐 Visual-hull pipeline
+    • Builds watertight mesh
+    • Generates faceted shell
+    • Exports connected SVG net
     ↓
 📊 Results in App
     • 3D model preview (interactive)
-    • SVG vector outline preview
+    • SVG net preview
     • Download button
     ↓
 📥 Download SVG
@@ -90,19 +90,20 @@ A web app that simplifies the entire paper lamp creation workflow:
 
 **Frontend:**
 - Next.js 14 (React + TypeScript)
-- Shadcn/ui components
 - Tailwind CSS
 - Three.js (3D viewer)
 - Camera API (phone capture)
 
 **Backend:**
-- Node.js + Express
-- KIRI Engine API (3D scanning)
-- SketchEdge API (vector extraction)
+- Next.js API routes
+- Python processing scripts
+- rembg / ONNX Runtime for segmentation
+- trimesh / scikit-image / shapely for geometry and SVG export
 
 **Hosting:**
-- Vercel (frontend + backend)
-- Free tier supports MVP
+- Single Docker web service for the first cloud MVP
+- Persistent disk for uploaded photos and generated outputs
+- Render or Railway recommended first
 
 ---
 
@@ -110,23 +111,22 @@ A web app that simplifies the entire paper lamp creation workflow:
 
 ### For Users (App)
 
-1. Open **[https://build-my-paper-lamp.vercel.app](https://build-my-paper-lamp.vercel.app)** on your phone
+1. Open the deployed tester link on your phone
 2. Click **"Start Creating"**
 3. Allow camera permission
-4. Take **15-50 photos** of your object (walk around it)
+4. Take **10-15 photos** of your object while walking around it once
 5. Click **"Process"**
-6. Wait 2-3 minutes while AI processes
+6. Wait while the cloud worker processes
 7. Download the **SVG file**
-8. Open in **Inkscape** or send to **laser cutter**
+8. Open in **Inkscape**, print as a cutting template, or send to a laser cutter
 9. Print, cut, glue, add light → **Done!** 🎉
 
 ### For Developers (Build from Source)
 
 #### Prerequisites
 - Node.js 18+
+- Python 3.11+ for local processing
 - Git
-- KIRI Engine API key (free: https://www.kiriengine.app/)
-- SketchEdge API key (free: https://sketchedge.net/en)
 
 #### Setup
 
@@ -160,9 +160,8 @@ npm run build
 # Test production build locally
 npm run start
 
-# Deploy to Vercel (one-click)
-npm i -g vercel
-vercel
+# Deploy the cloud MVP as a Docker app
+# See CLOUD_MVP.md
 ```
 
 ---
@@ -176,9 +175,10 @@ vercel
 
 ### For Developers
 - **[PROJECT_PLAN.md](PROJECT_PLAN.md)** — High-level project overview
+- **[CLOUD_MVP.md](CLOUD_MVP.md)** — Single-container cloud MVP deployment
 - **[TECHNICAL_SPEC.md](TECHNICAL_SPEC.md)** — Detailed technical architecture
 - **[API_DOCUMENTATION.md](docs/API.md)** — Backend endpoint reference
-- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** — How to deploy to Vercel
+- **[DEPLOYMENT.md](docs/DEPLOYMENT.md)** — Legacy Vercel notes
 - **[TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** — Common issues & fixes
 
 ---
@@ -205,6 +205,7 @@ build-my-paper-lamp/
 │   │       ├── upload/
 │   │       ├── process/
 │   │       ├── status/
+│   │       ├── model/
 │   │       └── download/
 │   │
 │   ├── components/           # React components
@@ -223,15 +224,15 @@ build-my-paper-lamp/
 
 ### 📸 Photography Tips
 1. **Good lighting** — Bright, even lighting (avoid shadows)
-2. **Many angles** — Walk around object, capture all sides
-3. **Close-ups** — Include detail photos
-4. **Focus** — Make sure photos are sharp (not blurry)
-5. **Variety** — Mix wide shots + detail shots
+2. **One full turn** — Capture 10-15 photos around the object
+3. **Consistent framing** — Keep the object centered and similarly sized
+4. **Focus** — Make sure photos are sharp, not blurry
+5. **Simple background** — High contrast or plain backgrounds segment better
 
 ### 📊 For Complex Objects
-- Small objects: 20-30 photos
-- Medium objects: 30-50 photos
-- Complex geometry: 50+ photos
+- First MVP target: 10-15 guided photos
+- Good early objects: solid, silhouette-driven forms
+- Weak early objects: handles, holes, thin parts, transparent objects, heavy concavities
 
 ### 🖨️ Laser Cutter Tips
 1. Get **material thickness right** (3mm cardstock works great)
@@ -313,15 +314,12 @@ A: Yes, for personal use. For commercial resale, contact us for a license.
 
 Built with love by [apichecker1-max](https://github.com/apichecker1-max)
 
-### API Partners
-- **KIRI Engine** — 3D scanning technology
-- **SketchEdge** — AI-powered vector extraction
-- **Vercel** — Hosting & deployment
-
 ### Open Source
 - [Next.js](https://nextjs.org)
 - [React](https://react.dev)
 - [Tailwind CSS](https://tailwindcss.com)
+- [rembg](https://github.com/danielgatis/rembg)
+- [trimesh](https://trimesh.org)
 - [Shadcn/ui](https://ui.shadcn.com)
 - [Three.js](https://threejs.org)
 

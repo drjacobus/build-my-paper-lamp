@@ -6,10 +6,10 @@ import Camera from '@/components/Camera'
 import PhotoGallery from '@/components/PhotoGallery'
 import { CapturedPhoto } from '@/types'
 
-const MIN_PHOTOS = 15
-const MAX_PHOTOS = 25
+const MIN_PHOTOS = 10
+const MAX_PHOTOS = 15
 
-// Resize + compress a photo blob to stay within Vercel's 4.5MB function limit.
+// Resize + compress a photo blob before upload so cloud processing stays snappy.
 // 1024px wide at 80% JPEG quality → ~150KB per photo.
 async function compressPhoto(blob: Blob): Promise<Blob> {
   return new Promise((resolve) => {
@@ -75,11 +75,7 @@ export default function CapturePage() {
       }
       const data = await res.json()
 
-      const url = data.demo
-        ? `/processing?jobId=${data.jobId}&demo=true`
-        : `/processing?jobId=${data.jobId}&projectId=${encodeURIComponent(data.projectId)}`
-
-      window.location.href = url
+      window.location.href = `/processing?jobId=${data.jobId}`
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setUploading(false)
@@ -94,7 +90,7 @@ export default function CapturePage() {
         <a href="/" className="text-amber-600 text-2xl leading-none">←</a>
         <div>
           <h1 className="text-lg font-bold text-amber-900">Capture Photos</h1>
-          <p className="text-xs text-amber-600">Walk around your object — all angles</p>
+          <p className="text-xs text-amber-600">Capture one full turn around the object</p>
         </div>
       </div>
 

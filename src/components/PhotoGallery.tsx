@@ -16,7 +16,7 @@ export default function PhotoGallery({ photos, onDelete }: Props) {
         <h3 className="text-sm font-semibold text-amber-800">
           Captured photos ({photos.length})
         </h3>
-        {photos.length >= 15 && (
+        {photos.length >= 10 && (
           <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
             ✓ Ready to process
           </span>

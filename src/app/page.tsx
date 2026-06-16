@@ -9,16 +9,14 @@ export default function LandingPage() {
   const [pendingTask, setPendingTask] = useState(false)
 
   useEffect(() => {
-    const projectId = localStorage.getItem('lamp_projectId')
     const jobId = localStorage.getItem('lamp_jobId')
-    if (projectId && jobId) setPendingTask(true)
+    if (jobId) setPendingTask(true)
   }, [])
 
   function resumeTask() {
-    const projectId = localStorage.getItem('lamp_projectId')
     const jobId = localStorage.getItem('lamp_jobId')
-    if (projectId && jobId) {
-      router.push(`/processing?jobId=${jobId}&projectId=${encodeURIComponent(projectId)}`)
+    if (jobId) {
+      router.push(`/processing?jobId=${jobId}`)
     }
   }
 
@@ -41,7 +39,7 @@ export default function LandingPage() {
           Build My<br />Paper Lamp
         </h1>
         <p className="text-amber-700 text-lg mb-8 max-w-xs mx-auto">
-          Turn any object into a custom DIY paper lamp — no 3D skills needed.
+          Turn guided object photos into a low-poly printable paper model.
         </p>
         <Link
           href="/capture"
@@ -59,10 +57,10 @@ export default function LandingPage() {
         </h2>
         <div className="space-y-4">
           {[
-            { icon: '📸', title: 'Capture', desc: 'Take 4+ photos of any object — front, back, left, right.' },
-            { icon: '🤖', title: '3D Scan', desc: 'AI reconstructs a 3D model from your photos in about a minute.' },
-            { icon: '📐', title: 'Extract', desc: 'Vector outlines are automatically generated — laser-cutter ready.' },
-            { icon: '✂️', title: 'Make', desc: 'Download SVG, cut the paper, add a light — done!' },
+            { icon: '📸', title: 'Capture', desc: 'Take 10–15 photos while moving around one object.' },
+            { icon: '🤖', title: 'Segment', desc: 'AI isolates the object so the geometry pipeline has clean silhouettes.' },
+            { icon: '📐', title: 'Generate', desc: 'A faceted 3D shell and connected SVG net are created automatically.' },
+            { icon: '✂️', title: 'Make', desc: 'Download the SVG, cut the paper, fold, and glue.' },
           ].map((step, i) => (
             <div key={i} className="flex items-start gap-4 bg-white rounded-2xl p-4 shadow-sm">
               <div className="text-3xl shrink-0">{step.icon}</div>
@@ -81,8 +79,8 @@ export default function LandingPage() {
           {[
             { icon: '📱', label: 'Mobile first' },
             { icon: '🆓', label: '100% free' },
-            { icon: '⚡', label: '~1 min to 3D' },
-            { icon: '🖨️', label: 'Laser-cutter ready' },
+            { icon: '⚡', label: 'Cloud processing' },
+            { icon: '🖨️', label: 'SVG net export' },
           ].map((f) => (
             <div key={f.label} className="bg-white rounded-xl p-3 text-center shadow-sm">
               <div className="text-2xl">{f.icon}</div>

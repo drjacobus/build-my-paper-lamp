@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Build My Paper Lamp',
-  description: 'Turn any object into a custom DIY paper lamp. Take photos → AI creates 3D → download laser-cutter SVG.',
+  description: 'Turn guided object photos into a low-poly printable paper model.',
   manifest: '/manifest.json',
   appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Paper Lamp' },
 }

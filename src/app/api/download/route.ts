@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getJob } from '@/lib/jobs'
+import fs from 'fs'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -9,6 +10,16 @@ export async function GET(req: NextRequest) {
 
   const job = getJob(jobId)
   if (!job) return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+  if (job.svgPath && fs.existsSync(job.svgPath)) {
+    return new NextResponse(fs.readFileSync(job.svgPath, 'utf8'), {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/svg+xml',
+        'Content-Disposition': `attachment; filename="lamp-${jobId.slice(0, 8)}.svg"`,
+        'Cache-Control': 'no-store',
+      },
+    })
+  }
   if (!job.svgData) return NextResponse.json({ error: 'SVG not ready' }, { status: 404 })
 
   return new NextResponse(job.svgData, {

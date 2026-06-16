@@ -515,6 +515,14 @@ If this is not true, do not build the UI yet. Instead, choose one of these actio
 
 Build the user-facing app only after the technical transformation has been proven.
 
+Status as of 2026-06-16: **Phase 2 technical MVP started**
+
+Reason:
+
+- The real Jagermeister phone-photo gate produced a recognizable bottle after AI segmentation.
+- The first UI should expose only the proven path: guided 10 to 15 image capture, AI masks, visual hull, faceted shell, and SVG net export.
+- Deployment should start as one Dockerized cloud app so testers can use a link without a developer laptop running.
+
 ### Scope
 
 - Photo upload or camera capture
@@ -541,6 +549,17 @@ Build the user-facing app only after the technical transformation has been prove
 - Bad inputs produce understandable feedback.
 - Output files are printable or laser-cutter-ready.
 - The app exposes the proven pipeline rather than pretending unfinished steps work.
+
+### First Cloud MVP Deployment
+
+Start with a single Docker service:
+
+- Next.js UI and API routes.
+- Python processing scripts in the same container.
+- Persistent disk mounted at `/data/lamp-jobs`.
+- Uploaded images, generated GLB previews, and SVG nets stored on that disk.
+
+Preferred first host: Render or Railway as a Docker web service. Vercel can host the frontend later after the worker is split out.
 
 ## Phase 3: Productization And Marketing
 
@@ -585,4 +604,4 @@ Produce one complete proof-of-concept folder containing:
 - Rendered or physical assembled result
 - Short report explaining whether the result is good enough to justify UI development
 
-This is the truth test for the project. Once it works, the app can be built around a real pipeline instead of hope.
+The first version of this now exists as a Docker-oriented technical MVP. The next truth test is a deployed private testing link that can process a real object without the developer laptop running.

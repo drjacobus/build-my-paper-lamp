@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.vercel
+.env
+.env.local
+__pycache__
+*.pyc
+poc/input/**/raw/*
+poc/input/**/images/*
+poc/input/**/images-*/*
+poc/input/**/masks/*
+poc/input/**/masks-*/*
+poc/output/**/reconstruction/*
+poc/output/**/cleaned-mesh/*
+poc/output/**/printable-planes/*
+poc/output/**/renders/*
