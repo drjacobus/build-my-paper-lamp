@@ -235,3 +235,15 @@ When the object is small in the frame, normalize each mask crop before visual-hu
 ```
 
 For the future app, AI should assist this geometry-first path rather than replace it. The most useful AI jobs are object masking, background cleanup, bad-photo rejection, rough angle estimation, and capture guidance.
+
+Generate rough fallback masks for a real-photo test set:
+
+```bash
+/opt/anaconda3/bin/conda run -n paperlamp-poc python poc/scripts/make-simple-foreground-masks.py \
+  --image-dir poc/input/real-jagermeister/images \
+  --output-dir poc/input/real-jagermeister/masks-tuned \
+  --close-radius 16 \
+  --dilate-radius 10
+```
+
+This script is intentionally only a fallback for experiments. The first real phone-photo bottle test showed that simple color/brightness masks are not reliable enough for glossy dark objects in cluttered scenes. AI segmentation is the next required step for user-uploaded photos.

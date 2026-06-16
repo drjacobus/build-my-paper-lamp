@@ -779,7 +779,47 @@ Interpretation:
 - It is a direct bridge to AI-assisted masking: AI can provide the masks; this deterministic step normalizes them before geometry.
 - It helps the mug handle silhouette, but it does not remove the fundamental visual-hull weakness around concavities and holes.
 
-### Experiment 16: Printable Plane Strategy
+### Experiment 16: Real Phone-Photo Bottle Test
+
+Status: Technical pass, visual failure
+
+Input object:
+
+- User-provided Jagermeister bottle phone photos.
+- 19 HEIC images under `/Users/jacoblind/Downloads/jagerMeisterImages/`.
+- First 10 upright views selected for the initial turntable-like subset.
+
+Setup:
+
+- Converted HEIC files to 1200px PNG proxies with macOS Quick Look.
+- Created `poc/input/real-jagermeister/turntable-10-view-manifest.csv`.
+- Added `poc/scripts/make-simple-foreground-masks.py` as a lightweight non-AI foreground-mask fallback.
+- Generated tuned masks under `poc/input/real-jagermeister/masks-tuned/`.
+
+Result:
+
+- Visual hull:
+  - 69,692 occupied voxels out of 884,736 after cleanup;
+  - OBJ mesh with 17,139 vertices and 34,318 faces;
+  - watertight mesh.
+- Faceted shell:
+  - 200 target faces -> 200 faces, 102 vertices, watertight;
+  - 400 target faces -> 400 faces, 202 vertices, watertight;
+  - 800 target faces -> 800 faces, 401 vertices, not watertight.
+- Connected net:
+  - 200 faces;
+  - 15 islands;
+  - 93 glue tabs;
+  - page height: 954 mm.
+
+Visual read:
+
+- The pipeline technically runs on real phone photos, but the reconstructed shape is not a good bottle.
+- The failure is primarily mask quality: simple color/brightness heuristics over-smoothed the bottle body and did not reliably preserve the neck/cap.
+- This is a strong argument for the AI-assisted route: real user photos need robust object segmentation, quality checks, and capture guidance before visual hull.
+- The object itself is also challenging: glossy dark glass, cluttered background, changing camera height, and reflective highlights.
+
+### Experiment 17: Printable Plane Strategy
 
 Status: Not started
 
@@ -794,7 +834,7 @@ Result:
 
 - TBD
 
-### Experiment 17: Physical Or Rendered Validation
+### Experiment 18: Physical Or Rendered Validation
 
 Status: Not started
 
@@ -821,15 +861,14 @@ Result:
 - Image-conditioned mesh APIs may hallucinate shape detail. A text prompt can help semantic features, but it cannot replace geometric evidence.
 - AI segmentation or capture guidance could improve the visual-hull route, but AI-generated geometry can drift away from the user's actual object.
 - Visual hull is weak for handles, holes, loops, thin parts, and concavities. The product should initially guide users toward solid silhouette-driven objects.
+- Real phone-photo tests can fail at mask quality before geometry. Robust AI segmentation is now a critical path item for real user uploads.
 
 ## Next Actions
 
 1. Promote controlled turntable visual hull as the primary non-Tripo image-to-mesh route.
-2. Test THU-MVS Cat/Dog next as the best public physical-object benchmark: turntable-like capture, recognizable animal figurines, and enough views to subset to 10 to 15 inputs.
-3. Use Washington RGB-D as the next generalization benchmark after THU-MVS.
-4. Keep BigBIRD as a later mask/turntable stress test.
-5. Test the same route on one real phone-captured object with 10 to 15 images and a clean background.
-6. Improve capture guidance assumptions: object centered, same distance, full 360-degree coverage, high contrast background, minimal shadows.
-7. Prototype AI-assisted masks or capture quality checks only after the real-capture baseline is measured.
-8. Improve connected-net page layout, fold/cut styling, and assembly order after the real-capture test.
-9. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.
+2. Replace simple heuristic masking with real AI segmentation for user photos.
+3. Add capture quality checks: reject cropped, blurry, top-down, duplicate-angle, or badly segmented frames.
+4. Improve capture guidance assumptions: object centered, same distance, full 360-degree coverage, high contrast background, minimal shadows.
+5. Re-run the Jagermeister bottle after AI segmentation to separate mask failure from geometry failure.
+6. Improve connected-net page layout, fold/cut styling, and assembly order after the real-capture mask issue is solved.
+7. Keep COLMAP in the pipeline only as a diagnostic/camera-recovery baseline for now.

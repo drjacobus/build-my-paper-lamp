@@ -91,6 +91,14 @@ Each tool or pipeline must be evaluated against the same checklist:
   - Coffee Mug crop-normalized visual hull produced a watertight mesh with 17,767 vertices and 35,546 faces;
   - Coffee Mug 200 and 400-face shells stayed watertight;
   - visual read: crop normalization improves object scale/detail and helps the mug handle silhouette, but concavity remains a core visual-hull limitation.
+- Started the first real user-photo test on a Jagermeister bottle:
+  - converted 19 HEIC phone photos to 1200px PNG proxies through macOS Quick Look;
+  - selected the first 10 upright views as the most turntable-like subset;
+  - added `make-simple-foreground-masks.py` as a non-AI fallback mask generator;
+  - 10-view visual hull produced a watertight mesh with 17,139 vertices and 34,318 faces;
+  - 200 and 400-face shells stayed watertight;
+  - connected 200-face net produced 15 islands and 93 glue tabs;
+  - visual read: shape failed because the heuristic masks over-smoothed the bottle and missed neck/cap detail. This confirms the next real-photo step should be true AI segmentation or cleaner capture backgrounds.
 
 ### 2026-06-15: Phase 1 Setup
 

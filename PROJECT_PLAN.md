@@ -135,6 +135,14 @@ Initial findings:
   - connected 200-face Bell Pepper net produced 12 islands and 82 glue tabs;
   - Washington Coffee Mug crop-normalized visual hull produced 17,767 vertices and 35,546 faces, watertight;
   - 200 and 400-face Coffee Mug shells stayed watertight, and the handle silhouette improved.
+- First real user-photo test was run on a Jagermeister bottle:
+  - 19 HEIC phone photos were converted to 1200px PNG proxies;
+  - first 10 upright views were selected as the closest turntable-like subset;
+  - a simple foreground-mask fallback script was added;
+  - visual hull produced a watertight mesh with 17,139 vertices and 34,318 faces;
+  - 200 and 400-face shells stayed watertight;
+  - connected 200-face net produced 15 islands and 93 glue tabs;
+  - visual shape failed because the heuristic masks did not reliably capture the bottle neck/cap and over-smoothed the silhouette.
 
 Current conclusion:
 
@@ -149,6 +157,7 @@ Current conclusion:
 - AI should be treated as an assistant to this geometry-first route, not as the primary source of truth. Good candidate uses are object masking, background cleanup, crop normalization, capture quality checks, rough angle estimation, and optional semantic hints; generated mesh details must still be checked against the input silhouettes.
 - The first robust mesh-to-plane conversion may be possible with `trimesh`, `shapely`, scikit-image, and image silhouettes; Blender remains deferred unless the Python stack is insufficient.
 - Object choice matters: solid silhouette-driven forms are good early targets; handles, holes, loops, thin parts, and concavities are weak targets for visual hull and should be filtered out or handled by a later method.
+- Real phone photos need robust AI segmentation or much stronger capture constraints. Simple color/brightness masking is not reliable for glossy dark objects in cluttered backgrounds.
 
 Next action:
 

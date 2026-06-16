@@ -16,6 +16,8 @@ __pycache__/
 poc/input/**/raw/*
 poc/input/**/images/*
 poc/input/**/images-*/*
+poc/input/**/masks/*
+poc/input/**/masks-*/*
 !poc/input/**/SOURCE.md
 poc/output/**/reconstruction/*
 poc/output/**/cleaned-mesh/*
