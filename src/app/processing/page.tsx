@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 const PIPELINE_STAGES = [
   { min: 0, label: 'Photos uploaded' },
   { min: 10, label: 'Creating AI segmentation masks' },
+  { min: 30, label: 'Review segmentation' },
   { min: 35, label: 'Building visual-hull mesh' },
   { min: 65, label: 'Simplifying faceted shell' },
   { min: 85, label: 'Exporting printable SVG net' },
@@ -99,6 +100,15 @@ function ProcessingContent() {
           clearInterval(id)
           setFailed(true)
           setFailMsg(data.error ?? 'Scan failed')
+          return
+        }
+        if (data.status === 'review') {
+          doneRef.current = true
+          clearInterval(id)
+          const target = new URL('/review', window.location.origin)
+          target.searchParams.set('jobId', jobId)
+          if (data.contactSheetUrl) target.searchParams.set('contactSheetUrl', data.contactSheetUrl)
+          router.push(`${target.pathname}${target.search}`)
           return
         }
         if (data.status === 'completed') {
@@ -199,7 +209,7 @@ function ProcessingContent() {
 
       {!timedOut && (
         <div className="mt-8 bg-amber-100 rounded-xl px-4 py-3 text-center">
-          <p className="text-xs text-amber-600 font-medium">Cloud worker is processing your photos</p>
+          <p className="text-xs text-amber-600 font-medium">MacBook worker is processing your photos</p>
           <p className="text-xs text-amber-400 mt-0.5">Usually takes a few minutes — you can close this page and come back</p>
         </div>
       )}

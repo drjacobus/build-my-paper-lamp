@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { spawn } from 'child_process'
-import { JOB_DIR, createJob, updateJob } from '@/lib/jobs'
+import { JOB_DIR, createJob, getJob, updateJob } from '@/lib/jobs'
 
 const PYTHON_BIN = process.env.PYTHON_BIN || 'python3'
 
@@ -13,18 +13,108 @@ export function jobDir(jobId: string) {
   return path.join(JOB_DIR, jobId)
 }
 
-export function startLocalPipeline(jobId: string) {
+function tailPush(tail: string[], text: string) {
+  tail.push(text)
+  while (tail.join('').length > 2500) tail.shift()
+}
+
+function failJob(jobId: string, code: number | null, stderrTail: string[]) {
+  const detail = stderrTail.join('').trim()
+  updateJob(jobId, {
+    status: 'failed',
+    progress: 100,
+    step: 'Processing failed',
+    error: detail
+      ? `Pipeline exited with code ${code}. ${detail.slice(-1200)}`
+      : `Pipeline exited with code ${code}`,
+  })
+}
+
+export function startSegmentation(jobId: string) {
+  const dir = jobDir(jobId)
+  const imageDir = path.join(dir, 'images')
+  const outputDir = path.join(dir, 'output')
+  const maskDir = path.join(dir, 'masks-ai-isnet')
+  const script = path.join(process.cwd(), 'poc/scripts/make-ai-foreground-masks.py')
+  const contactSheetPath = path.join(outputDir, 'segmentation-contact-sheet.jpg')
+  const stderrTail: string[] = []
+
+  ensureDir(outputDir)
+  updateJob(jobId, {
+    status: 'scanning',
+    progress: 12,
+    step: 'Creating AI segmentation masks',
+  })
+
+  const child = spawn(PYTHON_BIN, [
+    script,
+    '--image-dir',
+    imageDir,
+    '--output-dir',
+    maskDir,
+    '--model',
+    'isnet-general-use',
+    '--contact-sheet',
+    contactSheetPath,
+  ], {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+
+  child.stdout.on('data', (chunk) => {
+    console.log(`[segment:${jobId}] ${chunk.toString()}`)
+  })
+
+  child.stderr.on('data', (chunk) => {
+    const text = chunk.toString()
+    console.error(`[segment:${jobId}] ${text}`)
+    tailPush(stderrTail, text)
+  })
+
+  child.on('close', (code) => {
+    if (code === 0 && fs.existsSync(contactSheetPath)) {
+      updateJob(jobId, {
+        status: 'review',
+        progress: 30,
+        step: 'Review segmentation before reconstruction',
+        contactSheetUrl: `/api/contact-sheet?jobId=${encodeURIComponent(jobId)}`,
+        contactSheetPath,
+      })
+      return
+    }
+    failJob(jobId, code, stderrTail)
+  })
+}
+
+export function startLocalPipeline(jobId: string, complexity: 'simple' | 'medium' | 'detailed' = 'medium') {
   const dir = jobDir(jobId)
   const script = path.join(process.cwd(), 'poc/scripts/run-mvp-pipeline.py')
   const stderrTail: string[] = []
+  const faceCount = complexity === 'simple' ? 180 : complexity === 'detailed' ? 520 : 320
+  const resolution = complexity === 'detailed' ? 112 : 96
+
+  const job = getJob(jobId)
+  if (!job || job.status === 'completed' || job.status === 'scanning') return
 
   updateJob(jobId, {
     status: 'scanning',
-    progress: 5,
-    step: 'Segmenting object from photos',
+    progress: 35,
+    step: 'Building visual-hull mesh',
   })
 
-  const child = spawn(PYTHON_BIN, [script, '--job-dir', dir, '--python', PYTHON_BIN], {
+  const child = spawn(PYTHON_BIN, [
+    script,
+    '--job-dir',
+    dir,
+    '--python',
+    PYTHON_BIN,
+    '--skip-segmentation',
+    '--resolution',
+    String(resolution),
+    '--face-count',
+    String(faceCount),
+  ], {
     cwd: process.cwd(),
     env: process.env,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -33,9 +123,7 @@ export function startLocalPipeline(jobId: string) {
   child.stdout.on('data', (chunk) => {
     const text = chunk.toString()
     console.log(`[pipeline:${jobId}] ${text}`)
-    if (text.includes('make-ai-foreground-masks.py')) {
-      updateJob(jobId, { progress: 15, step: 'Creating AI segmentation masks' })
-    } else if (text.includes('build-turntable-visual-hull.py')) {
+    if (text.includes('build-turntable-visual-hull.py')) {
       updateJob(jobId, { progress: 45, step: 'Building visual-hull mesh' })
     } else if (text.includes('render-faceted-shell.py')) {
       updateJob(jobId, { progress: 70, step: 'Simplifying faceted shell' })
@@ -47,8 +135,7 @@ export function startLocalPipeline(jobId: string) {
   child.stderr.on('data', (chunk) => {
     const text = chunk.toString()
     console.error(`[pipeline:${jobId}] ${text}`)
-    stderrTail.push(text)
-    while (stderrTail.join('').length > 2500) stderrTail.shift()
+    tailPush(stderrTail, text)
   })
 
   child.on('close', (code) => {
@@ -73,15 +160,7 @@ export function startLocalPipeline(jobId: string) {
       return
     }
 
-    const detail = stderrTail.join('').trim()
-    updateJob(jobId, {
-      status: 'failed',
-      progress: 100,
-      step: 'Processing failed',
-      error: detail
-        ? `Pipeline exited with code ${code}. ${detail.slice(-1200)}`
-        : `Pipeline exited with code ${code}`,
-    })
+    failJob(jobId, code, stderrTail)
   })
 }
 
@@ -98,6 +177,6 @@ export async function createLocalJob(files: File[], jobId: string) {
   }
 
   const job = createJob(jobId, files.length)
-  startLocalPipeline(jobId)
+  startSegmentation(jobId)
   return job
 }

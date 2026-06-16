@@ -228,7 +228,7 @@ def render_svg(
     tab_depth: float,
 ) -> tuple[int, int]:
     cursor_x = margin
-    cursor_y = margin
+    cursor_y = margin + 14.0
     row_height = 0.0
     content: list[str] = []
     tabs = 0
@@ -260,12 +260,12 @@ def render_svg(
                     if len(tab):
                         points_attr = " ".join(f"{x:.2f},{y:.2f}" for x, y in tab)
                         content.append(
-                            f'<polygon points="{points_attr}" fill="none" stroke="#d97706" stroke-width="0.22" />'
+                            f'<polygon class="glue-tab" points="{points_attr}" />'
                         )
                         tabs += 1
 
             points_attr = " ".join(f"{x:.2f},{y:.2f}" for x, y in points)
-            content.append(f'<polygon points="{points_attr}" fill="none" stroke="#111" stroke-width="0.25" />')
+            content.append(f'<polygon class="cut-face" points="{points_attr}" />')
             centroid = points.mean(axis=0)
             content.append(text_element(float(centroid[0]), float(centroid[1]), f"F{placed.face_index + 1}", size=2.0))
 
@@ -295,7 +295,17 @@ def render_svg(
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{page_width:.2f}mm" '
         f'height="{page_height:.2f}mm" viewBox="0 0 {page_width:.2f} {page_height:.2f}">',
         '<rect x="0" y="0" width="100%" height="100%" fill="white"/>',
-        '<style>polygon { vector-effect: non-scaling-stroke; }</style>',
+        "<style>",
+        "polygon, line { vector-effect: non-scaling-stroke; }",
+        ".cut-face { fill: none; stroke: #111; stroke-width: 0.25; }",
+        ".glue-tab { fill: none; stroke: #d97706; stroke-width: 0.22; }",
+        ".legend { font-family: monospace; font-size: 3px; fill: #444; }",
+        "</style>",
+        '<text x="10" y="8" class="legend">Build My Paper Lamp - cut black outlines, glue orange tabs, match E labels across islands</text>',
+        '<line x1="10" y1="12" x2="24" y2="12" stroke="#111" stroke-width="0.25"/>',
+        '<text x="27" y="13" class="legend">cut/fold edge</text>',
+        '<line x1="58" y1="12" x2="72" y2="12" stroke="#d97706" stroke-width="0.22"/>',
+        '<text x="75" y="13" class="legend">glue tab</text>',
     ]
     output_svg.parent.mkdir(parents=True, exist_ok=True)
     output_svg.write_text("\n".join(header + content + ["</svg>"]) + "\n")

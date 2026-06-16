@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Camera from '@/components/Camera'
 import PhotoGallery from '@/components/PhotoGallery'
@@ -83,6 +83,18 @@ export default function CapturePage() {
   }
 
   const ready = photos.length >= MIN_PHOTOS
+  const qualityChecks = useMemo(() => {
+    const avgSize = photos.length
+      ? photos.reduce((sum, photo) => sum + photo.blob.size, 0) / photos.length
+      : 0
+    return [
+      { label: '10-15 photos selected', ok: photos.length >= MIN_PHOTOS && photos.length <= MAX_PHOTOS },
+      { label: 'Photos are in rotation order', ok: photos.length >= MIN_PHOTOS },
+      { label: 'One object only, centered in frame', ok: photos.length >= MIN_PHOTOS },
+      { label: 'Image files look large enough', ok: photos.length === 0 || avgSize > 35_000 },
+    ]
+  }, [photos])
+  const hardWarnings = qualityChecks.filter((check) => !check.ok)
 
   return (
     <main className="min-h-screen bg-amber-50 px-4 py-6 max-w-sm mx-auto">
@@ -91,6 +103,16 @@ export default function CapturePage() {
         <div>
           <h1 className="text-lg font-bold text-amber-900">Capture Photos</h1>
           <p className="text-xs text-amber-600">Capture one full turn around the object</p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl p-4 mb-5 border border-amber-100">
+        <h2 className="text-sm font-bold text-amber-900 mb-2">Capture guide</h2>
+        <div className="grid grid-cols-2 gap-2 text-xs text-amber-700">
+          <div className="bg-amber-50 rounded-xl p-2">One object only</div>
+          <div className="bg-amber-50 rounded-xl p-2">Full 360° turn</div>
+          <div className="bg-amber-50 rounded-xl p-2">Plain background</div>
+          <div className="bg-amber-50 rounded-xl p-2">Object fully visible</div>
         </div>
       </div>
 
@@ -110,6 +132,27 @@ export default function CapturePage() {
       <Camera photos={photos} onPhotos={handlePhotos} />
       <PhotoGallery photos={photos} onDelete={handleDelete} />
 
+      {photos.length > 0 && (
+        <div className="mt-5 bg-white rounded-2xl p-4 border border-amber-100">
+          <h2 className="text-sm font-bold text-amber-900 mb-3">Input quality checks</h2>
+          <div className="space-y-2">
+            {qualityChecks.map((check) => (
+              <div key={check.label} className="flex items-center gap-2 text-sm">
+                <span className={check.ok ? 'text-green-600' : 'text-amber-400'}>
+                  {check.ok ? '✓' : '○'}
+                </span>
+                <span className={check.ok ? 'text-amber-800' : 'text-amber-500'}>{check.label}</span>
+              </div>
+            ))}
+          </div>
+          {hardWarnings.length > 0 && ready && (
+            <p className="text-xs text-amber-500 mt-3">
+              You can continue, but better inputs will make better geometry.
+            </p>
+          )}
+        </div>
+      )}
+
       {error && (
         <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
           {error}
@@ -128,7 +171,7 @@ export default function CapturePage() {
               {uploadLabel}
             </span>
           ) : ready ? (
-            `Process ${photos.length} Photos →`
+            `Segment ${photos.length} Photos →`
           ) : (
             `${MIN_PHOTOS - photos.length} more photos needed`
           )}

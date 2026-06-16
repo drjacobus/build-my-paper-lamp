@@ -3,6 +3,7 @@ export type JobStatus =
   | 'uploading'
   | 'uploaded'
   | 'scanning'
+  | 'review'
   | 'generating_svg'
   | 'completed'
   | 'failed'

@@ -62,6 +62,7 @@ def main() -> None:
     parser.add_argument("--resolution", type=int, default=104)
     parser.add_argument("--face-count", type=int, default=320)
     parser.add_argument("--python", default=sys.executable)
+    parser.add_argument("--skip-segmentation", action="store_true")
     args = parser.parse_args()
 
     script_dir = Path(__file__).resolve().parent
@@ -71,20 +72,21 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = args.job_dir / "turntable-ai-isnet-manifest.csv"
 
-    run(
-        [
-            args.python,
-            str(script_dir / "make-ai-foreground-masks.py"),
-            "--image-dir",
-            str(image_dir),
-            "--output-dir",
-            str(mask_dir),
-            "--model",
-            "isnet-general-use",
-            "--contact-sheet",
-            str(output_dir / "segmentation-contact-sheet.jpg"),
-        ]
-    )
+    if not args.skip_segmentation:
+        run(
+            [
+                args.python,
+                str(script_dir / "make-ai-foreground-masks.py"),
+                "--image-dir",
+                str(image_dir),
+                "--output-dir",
+                str(mask_dir),
+                "--model",
+                "isnet-general-use",
+                "--contact-sheet",
+                str(output_dir / "segmentation-contact-sheet.jpg"),
+            ]
+        )
 
     view_count = write_manifest(image_dir, mask_dir, manifest_path, args.max_views)
     prefix = "paperlamp-mvp"
