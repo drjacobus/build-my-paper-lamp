@@ -186,6 +186,11 @@ export default function Camera({ onPhotos, photos }: Props) {
             />
           ))}
         </div>
+        {!done && (
+          <div className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] leading-4 text-amber-700">
+            Keep the object centered, stay about the same distance away, and move around the object instead of rotating the phone angle randomly.
+          </div>
+        )}
       </div>
 
       <div className="relative bg-black rounded-2xl overflow-hidden aspect-[3/4]">
@@ -241,6 +246,12 @@ export default function Camera({ onPhotos, photos }: Props) {
       <p className="text-center text-sm text-amber-700 mt-3">
         Take one photo at each guide step. Avoid changing distance.
       </p>
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-amber-700">
+        <div className="rounded-xl bg-white border border-amber-100 px-3 py-2">Good light, low shadows</div>
+        <div className="rounded-xl bg-white border border-amber-100 px-3 py-2">No zoom between shots</div>
+        <div className="rounded-xl bg-white border border-amber-100 px-3 py-2">Whole object visible</div>
+        <div className="rounded-xl bg-white border border-amber-100 px-3 py-2">Retake blurry photos</div>
+      </div>
       <button
         type="button"
         onClick={choosePhotos}

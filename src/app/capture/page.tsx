@@ -127,6 +127,9 @@ export default function CapturePage() {
           <div className="bg-amber-50 rounded-xl p-2">Plain background</div>
           <div className="bg-amber-50 rounded-xl p-2">Object fully visible</div>
         </div>
+        <p className="mt-3 text-xs leading-5 text-amber-600">
+          Best results come from one smooth lap around the object with steady distance and steady framing. If you upload from the library, fix the order before you start segmentation.
+        </p>
       </div>
 
       <div className="mb-5">

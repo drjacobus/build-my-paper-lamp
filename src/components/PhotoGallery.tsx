@@ -27,6 +27,9 @@ export default function PhotoGallery({ photos, onDelete, onMove }: Props) {
       <p className="text-xs text-amber-600 mb-3">
         Arrange the photos in one smooth turn around the object. Each slot below matches the guided angle.
       </p>
+      <div className="mb-3 rounded-xl bg-amber-50 px-3 py-2 text-[11px] text-amber-700">
+        Use the arrows to fix the order before segmentation. Aim for one steady clockwise turn with similar distance in every shot.
+      </div>
       <div className="grid grid-cols-3 gap-2">
         {photos.map((photo, index) => (
           <div key={photo.id} className="rounded-xl bg-white border border-amber-100 p-1.5 shadow-sm">
